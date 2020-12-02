@@ -4,18 +4,15 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class User implements UserInterface
 {
-    const DRAFT = 0;
-    const ACTIVE = 1;
-
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -37,34 +34,45 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
-
     private $password;
 
-
     /**
-     * @var string The hashed hash
+     * @var string The hash
      * @ORM\Column(type="string")
      */
-
     private $hash;
 
     /**
-     * @var string The hashed status
+     * @var boolean
      * @ORM\Column(type="boolean")
      */
-
     private $status;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(name="created_at", type="datetime_immutable")
+     * @var \DateTimeImmutable
      */
-    private $created_time;
+    private $createdAt;
 
     /**
-     * @ORM\Column(type="integer")
+     * @var \DateTimeImmutable
+     * @ORM\Column(name="updated_at", type="datetime_immutable")
      */
-    private $updated_time;
+    private $updatedAt;
 
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function preSetDateTime():void
+    {
+        $dateTimeImmutable = new \DateTimeImmutable();
+        if(!$this->getCreatedAt())
+        {
+            $this->setCreatedAt($dateTimeImmutable);
+        }
+        $this->setUpdatedAt($dateTimeImmutable);
+    }
 
     /**
      * @return int|null
@@ -102,12 +110,12 @@ class User implements UserInterface
     }
 
     /**
-     * @param string $hash
      * @return $this
+     * @ORM\PrePersist()
      */
-    public function setHash(string $hash): self
+    public function setHash(): self
     {
-        $this->hash = $hash;
+        $this->hash = hash('md4', $this->getEmail().":".$this->getPassword());
         return $this;
     }
 
@@ -120,19 +128,10 @@ class User implements UserInterface
     }
 
     /**
-     * @return string|null
-     */
-    public function getStatusName(): ?string
-    {
-        $array = ['DRAFT', 'ACTIVE'];
-        return $array[$this->getStatus()];
-    }
-
-    /**
-     * @param int $status
+     * @param bool $status
      * @return $this
      */
-    public function setStatus(int $status): self
+    public function setStatus(bool $status): self
     {
         $this->status = $status;
 
@@ -140,35 +139,43 @@ class User implements UserInterface
     }
 
     /**
-     * @return int|null
+     * @return \DateTimeImmutable |null
      */
-    public function getCreatedTime(): ?int
+    public function getCreatedAt(): ? \DateTimeImmutable
     {
-       return $this->created_time;
+       return $this->createdAt;
     }
 
     /**
-     * @param int $time
+     * @param \DateTimeImmutable $dateTimeImmutable
      * @return $this
      */
-    public function setCreatedTime(int $time): self
+    public function setCreatedAt(\DateTimeImmutable $dateTimeImmutable): self
     {
-        $this->created_time = $time;
+        $this->createdAt = $dateTimeImmutable;
 
         return $this;
     }
 
+    /**
+     * @return \DateTimeImmutable |null
+     */
+    public function getUpdatedTime():  ? \DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
 
     /**
-     * @param int $time
+     * @param \DateTimeImmutable $dateTimeImmutable
      * @return $this
      */
-    public function setUpdatedTime(int $time): self
+    public function setUpdatedAt(\DateTimeImmutable $dateTimeImmutable): self
     {
-        $this->updated_time = $time;
+        $this->updatedAt = $dateTimeImmutable;
 
         return $this;
     }
+
     /**
      * A visual identifier that represents this user.
      *
@@ -181,13 +188,11 @@ class User implements UserInterface
 
     /**
      * @see UserInterface
+     * @return array
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-
-        return array_unique($roles);
+        return $this->roles;
     }
 
     /**
@@ -209,6 +214,10 @@ class User implements UserInterface
         return (string) $this->password;
     }
 
+    /**
+     * @param string $password
+     * @return $this
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
