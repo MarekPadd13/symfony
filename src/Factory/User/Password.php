@@ -21,6 +21,7 @@ class Password
     {
         $this->passwordEncode = $passwordEncode;
     }
+
     /**
      * @param User $user
      */

@@ -1,0 +1,13 @@
+User:
+  password:
+    password: Password
+    repeat: Repeat Password
+  email: Email
+Security:
+  login: login
+  Logout: Logout
+  Sign in: Sign in
+  Please sign in: Please sign in
+  Error:
+    email: Email could not be found.
+    status: Your status draft.

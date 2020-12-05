@@ -18,6 +18,8 @@ class Confirmation extends DoctrineManager
             throw new \Exception("Your status is active");
         }
         $user->setStatus(true);
+
+
         $this->getObjectManager()->flush();
     }
 

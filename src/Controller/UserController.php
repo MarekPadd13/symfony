@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\User;
+namespace App\Controller;
 
 use App\Entity\User;
 use App\Factory\User\ConfirmationMailMailer;
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-class RegistrationController extends AbstractController
+class UserController extends AbstractController
 {
     /**
      * @var Factory
@@ -22,7 +22,7 @@ class RegistrationController extends AbstractController
     private $factory;
 
     /**
-     * RegistrationController constructor.
+     * UserController constructor.
      * @param Factory $factory
      */
     public function __construct(Factory $factory)
@@ -35,7 +35,6 @@ class RegistrationController extends AbstractController
      * @param Request $request
      * @return Response
      * @throws TransportExceptionInterface
-     * @throws \Exception
      */
     public function registration(Request $request): Response
     {
@@ -50,9 +49,25 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        return $this->render('security/registration.html.twig', [
+        return $this->render('user/registration.html.twig', [
             'user' => $user,
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @Route("/confirm/{hash}", name="user_confirm", methods={"GET"})
+     * @param User $user
+     * @return Response
+     */
+    public function confirm(User $user): Response
+    {
+        try {
+            $this->factory->confirmed($user);
+            $this->addFlash('success', "Ok");
+        }catch (\Exception $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+        return $this->redirectToRoute('app_login');
     }
 }

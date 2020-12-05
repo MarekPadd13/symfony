@@ -1,0 +1,15 @@
+User:
+  password:
+    password: Пароль
+    repeat: Повтор пароля
+  email: Адрес электронной почты
+Registration: Регистрация
+Save: Сохранить
+Security:
+  login: Логин
+  Logout: Выйти
+  Sign in: Войти
+  Please sign in: Пожалуйста, войдите в систему!
+  Error:
+    email: Электронная почта не найдена в системе.
+    status: Электронная почта не подтверждена.
