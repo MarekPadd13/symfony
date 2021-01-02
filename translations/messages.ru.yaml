@@ -13,3 +13,13 @@ Security:
   Error:
     email: Электронная почта не найдена в системе.
     status: Электронная почта не подтверждена.
+Profile:
+  Title: Профиль
+  LastName: Фамилия
+  FirstName: Имя
+  Patronymic: Отчество
+  Sex:
+    label: Пол
+    man: Мужской
+    woman: Женский
+  Phone: Телефон

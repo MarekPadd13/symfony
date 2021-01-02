@@ -1,11 +1,13 @@
 <?php
 
 
-namespace App\Factory\User;
+namespace App\Handler\User\Registration;
 
 
 use App\Entity\User;
+use App\Factory\User\Mail\ConfirmationMailFactory;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
 class ConfirmationMailMailer
@@ -16,24 +18,24 @@ class ConfirmationMailMailer
     private $mailer;
 
     /**
-     * @var ConfirmationMail
+     * @var ConfirmationMailFactory
      */
     private $confirmationMail;
 
     /**
      * ConfirmationMailMailer constructor.
-     * @param ConfirmationMail $confirmationMail
+     * @param ConfirmationMailFactory $confirmationMailFactory
      * @param MailerInterface $mailer
      */
-    public function __construct(ConfirmationMail $confirmationMail, MailerInterface $mailer)
+    public function __construct(ConfirmationMailFactory $confirmationMailFactory, MailerInterface $mailer)
     {
-        $this->confirmationMail = $confirmationMail;
+        $this->confirmationMail = $confirmationMailFactory;
         $this->mailer = $mailer;
     }
 
     /**
      * @param User $user
-     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function sendTo(User $user): void
     {

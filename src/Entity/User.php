@@ -44,28 +44,33 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @var string The hash
+     * @var string The hash confirm token
      * @ORM\Column(type="string")
      */
-    private $hash;
+    private $confirmToken;
 
     /**
      * @var boolean
      * @ORM\Column(type="boolean")
      */
-    private $status;
+    private $isEnabled = false;
 
     /**
-     * @ORM\Column(name="created_at", type="datetime_immutable")
+     * @ORM\Column(type="datetime_immutable")
      * @var \DateTimeImmutable
      */
     private $createdAt;
 
     /**
      * @var \DateTimeImmutable
-     * @ORM\Column(name="updated_at", type="datetime_immutable")
+     * @ORM\Column(type="datetime_immutable")
      */
     private $updatedAt;
+
+    /**
+     * @ORM\OneToOne(targetEntity="App\Entity\Profile", mappedBy="user")
+     */
+    protected $profile;
 
     /**
      * @ORM\PrePersist
@@ -111,36 +116,36 @@ class User implements UserInterface
     /**
      * @return string|null
      */
-    public function getHash(): ?string
+    public function getConfirmToken(): ?string
     {
-        return $this->hash;
+        return $this->confirmToken;
     }
 
     /**
+     * @param $confirmToken
      * @return $this
-     * @ORM\PrePersist()
      */
-    public function setHash(): self
+    public function setConfirmToken($confirmToken): self
     {
-        $this->hash = hash('md4', $this->getEmail().":".$this->getPassword());
+        $this->confirmToken = $confirmToken;
         return $this;
     }
 
     /**
      * @return bool
      */
-    public function getStatus(): bool
+    public function getIsEnabled(): bool
     {
-        return $this->status;
+        return $this->isEnabled;
     }
 
     /**
-     * @param bool $status
+     * @param bool $isEnabled
      * @return $this
      */
-    public function setStatus(bool $status): self
+    public function setIsEnabled(bool $isEnabled): self
     {
-        $this->status = $status;
+        $this->isEnabled = $isEnabled;
 
         return $this;
     }

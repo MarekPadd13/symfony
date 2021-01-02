@@ -78,7 +78,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
             throw new CustomUserMessageAuthenticationException($this->translator->trans('Security.Error.email'));
         }
 
-        if (!$user->getStatus()) {
+        if (!$user->getIsEnabled()) {
             // fail authentication with a custom error
             throw new CustomUserMessageAuthenticationException($this->translator->trans('Security.Error.status'));
         }

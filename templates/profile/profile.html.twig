@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% trans %}Profile.Title{% endtrans %}{% endblock %}
+{% block body %}
+    <h1>{% trans %}Profile.Title{% endtrans %}</h1>
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button class="btn btn-success">{% trans %}Save{% endtrans %}</button>
+    {{ form_end(form) }}
+{% endblock %}
