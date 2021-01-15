@@ -20,19 +20,22 @@ class MakeController extends AbstractController
 
     /**
      * @Route("/make/view/{id}", name="make_view")
+     *
      * @param int $id
      * @return Response
      */
     public function view($id = 1): Response
     {
-        if($id == 2) {
-          //  throw  $this->createNotFoundException("Такой страницы не существует");
+        if (2 == $id) {
+            //  throw  $this->createNotFoundException("Такой страницы не существует");
             $this->addFlash(
                 'notice',
                 'Your changes were saved!'
             );
+
             return $this->redirectToRoute('brand_new');
         }
+
         return $this->render('make/index.html.twig', [
             'controller_name' => 'MakeController',
         ]);

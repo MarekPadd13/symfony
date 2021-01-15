@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Handler\User\Registration;
-
 
 use App\Handler\HandlerInterface;
 

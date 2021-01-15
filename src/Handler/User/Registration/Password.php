@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Handler\User\Registration;
 
 use App\Entity\User;
@@ -15,7 +14,6 @@ class Password
 
     /**
      * Password constructor.
-     * @param UserPasswordEncoderInterface $passwordEncoder
      */
     public function __construct(UserPasswordEncoderInterface $passwordEncoder)
     {

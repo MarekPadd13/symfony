@@ -50,13 +50,14 @@ class User implements UserInterface
     private $confirmToken;
 
     /**
-     * @var boolean
+     * @var bool
      * @ORM\Column(type="boolean")
      */
     private $isEnabled = false;
 
     /**
      * @ORM\Column(type="datetime_immutable")
+     *
      * @var \DateTimeImmutable
      */
     private $createdAt;
@@ -76,34 +77,26 @@ class User implements UserInterface
      * @ORM\PrePersist
      * @ORM\PreUpdate
      */
-    public function preSetDateTime():void
+    public function preSetDateTime(): void
     {
         $dateTimeImmutable = new \DateTimeImmutable();
-        if(!$this->getCreatedAt())
-        {
+        if (!$this->getCreatedAt()) {
             $this->setCreatedAt($dateTimeImmutable);
         }
         $this->setUpdatedAt($dateTimeImmutable);
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string|null
-     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
     /**
-     * @param string $email
      * @return $this
      */
     public function setEmail(string $email): self
@@ -113,9 +106,6 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getConfirmToken(): ?string
     {
         return $this->confirmToken;
@@ -123,24 +113,22 @@ class User implements UserInterface
 
     /**
      * @param $confirmToken
+     *
      * @return $this
      */
     public function setConfirmToken($confirmToken): self
     {
         $this->confirmToken = $confirmToken;
+
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function getIsEnabled(): bool
     {
         return $this->isEnabled;
     }
 
     /**
-     * @param bool $isEnabled
      * @return $this
      */
     public function setIsEnabled(bool $isEnabled): self
@@ -155,11 +143,10 @@ class User implements UserInterface
      */
     public function getCreatedAt(): ? \DateTimeImmutable
     {
-       return $this->createdAt;
+        return $this->createdAt;
     }
 
     /**
-     * @param \DateTimeImmutable $dateTimeImmutable
      * @return $this
      */
     public function setCreatedAt(\DateTimeImmutable $dateTimeImmutable): self
@@ -172,13 +159,12 @@ class User implements UserInterface
     /**
      * @return \DateTimeImmutable |null
      */
-    public function getUpdatedTime():  ? \DateTimeImmutable
+    public function getUpdatedTime(): ? \DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
     /**
-     * @param \DateTimeImmutable $dateTimeImmutable
      * @return $this
      */
     public function setUpdatedAt(\DateTimeImmutable $dateTimeImmutable): self
@@ -200,7 +186,6 @@ class User implements UserInterface
 
     /**
      * @see UserInterface
-     * @return array
      */
     public function getRoles(): array
     {
@@ -208,7 +193,6 @@ class User implements UserInterface
     }
 
     /**
-     * @param array $roles
      * @return $this
      */
     public function setRoles(array $roles): self
@@ -227,7 +211,6 @@ class User implements UserInterface
     }
 
     /**
-     * @param string $password
      * @return $this
      */
     public function setPassword(string $password): self

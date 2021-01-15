@@ -1,14 +1,12 @@
 <?php
 
-
 namespace App\Handler\User\Registration;
-
 
 use App\Entity\User;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
-class RegistrationHandler implements  RegistrationHandlerInterface
+class RegistrationHandler implements RegistrationHandlerInterface
 {
     /**
      * @var Registration
@@ -26,6 +24,7 @@ class RegistrationHandler implements  RegistrationHandlerInterface
     private $password;
 
     /**
+     * RegistrationHandler constructor.
      * @param Registration $registration
      * @param ConfirmationMailMailer $confirmationMailMailer
      * @param Password $password
@@ -38,22 +37,18 @@ class RegistrationHandler implements  RegistrationHandlerInterface
     }
 
     /**
-     * @param User $user
      * @throws ORMException
      * @throws TransportExceptionInterface
      */
-    public function handle($user)
+    public function handle(User $user)
     {
-         $this->password->encode($user);
-         $this->registration->registry($user);
-         $this->confirmationMailMailer->sendTo($user);
+        $this->password->encode($user);
+        $this->registration->registry($user);
+        $this->confirmationMailMailer->sendTo($user);
     }
 
-    /**
-     * @return string
-     */
     public function successMessage(): string
     {
-        return "Confirm your email";
+        return 'Confirm your email';
     }
 }

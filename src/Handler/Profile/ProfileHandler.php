@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Handler\Profile;
 
 use App\Entity\Profile as ProfileEntity;
@@ -21,7 +20,6 @@ class ProfileHandler implements ProfileHandlerInterface
 
     /**
      * ProfileHandle constructor.
-     * @param Profile $profile
      */
     public function __construct(Profile $profile)
     {
@@ -30,6 +28,7 @@ class ProfileHandler implements ProfileHandlerInterface
 
     /**
      * @param ProfileEntity $entity
+     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -38,17 +37,11 @@ class ProfileHandler implements ProfileHandlerInterface
         $this->profile->createOrEdit($entity, $this->getUser());
     }
 
-    /**
-     * @param UserInterface $user
-     */
     public function setUser(UserInterface $user)
     {
         $this->user = $user;
     }
 
-    /**
-     * @return UserInterface
-     */
     public function getUser(): UserInterface
     {
         return $this->user;

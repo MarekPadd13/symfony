@@ -1,13 +1,11 @@
 <?php
 
-
 namespace App\Entity;
 
 use App\Repository\ProfileRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-
 
 /**
  * @ORM\Entity(repositoryClass=ProfileRepository::class)
@@ -16,10 +14,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Profile
 {
     /**
- * @ORM\Id
- * @ORM\GeneratedValue
- * @ORM\Column(type="integer")
- */
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
     private $id;
 
     /**
@@ -57,16 +55,12 @@ class Profile
      */
     private $user;
 
-    /**
-     * @return User|null
-     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
     /**
-     * @param UserInterface $user
      * @return $this
      */
     public function setUser(UserInterface $user): self

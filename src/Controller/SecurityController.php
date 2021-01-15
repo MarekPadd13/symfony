@@ -16,7 +16,6 @@ class SecurityController extends AbstractController
 
     /**
      * SecurityController constructor.
-     * @param AuthenticationUtils $authenticationUtils
      */
     public function __construct(AuthenticationUtils $authenticationUtils)
     {
@@ -25,13 +24,12 @@ class SecurityController extends AbstractController
 
     /**
      * @Route("/login", name="app_login")
-     * @return Response
      */
-    public function login():Response
+    public function login(): Response
     {
-         if ($this->getUser()) {
-             return $this->redirectToRoute('profile');
-         }
+        if ($this->getUser()) {
+            return $this->redirectToRoute('profile');
+        }
 
         // get the login error if there is one
         $error = $this->authenticationUtils->getLastAuthenticationError();

@@ -10,7 +10,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-
 class ProfileType extends AbstractType
 {
     /**
@@ -20,43 +19,35 @@ class ProfileType extends AbstractType
 
     /**
      * RegisterType constructor.
-     * @param TranslatorInterface $translator
      */
     public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
     }
 
-    /**
-     * @param FormBuilderInterface $builder
-     * @param array $options
-     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('lastName', TextType::class, ['required' => true, 'label'=> $this->translator->trans('Profile.LastName')])
-            ->add('firstName', TextType::class, ['required' => true, 'label'=> $this->translator->trans('Profile.FirstName')])
-            ->add('patronymic', TextType::class, ['required' => false, 'label'=> $this->translator->trans('Profile.Patronymic')])
+            ->add('lastName', TextType::class, ['required' => true, 'label' => $this->translator->trans('Profile.LastName')])
+            ->add('firstName', TextType::class, ['required' => true, 'label' => $this->translator->trans('Profile.FirstName')])
+            ->add('patronymic', TextType::class, ['required' => false, 'label' => $this->translator->trans('Profile.Patronymic')])
             ->add('phone', TextType::class, [
                 'required' => true,
-                'label'=> $this->translator->trans('Profile.Phone'),
-                'attr' => ['data-mask' => '+7(000)000-00-00']])
+                'label' => $this->translator->trans('Profile.Phone'),
+                'attr' => ['data-mask' => '+7(000)000-00-00'], ])
             ->add('sex', ChoiceType::class, [
-                'choices'  => [
+                'choices' => [
                     $this->translator->trans('Profile.Sex.man') => 1,
                     $this->translator->trans('Profile.Sex.woman') => 2,
                 ],
-                'label'=> $this->translator->trans('Profile.Sex.label')
+                'label' => $this->translator->trans('Profile.Sex.label'),
             ]);
     }
 
-    /**
-     * @param OptionsResolver $resolver
-     */
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Profile::class
+            'data_class' => Profile::class,
         ]);
     }
 }

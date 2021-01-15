@@ -25,8 +25,6 @@ class ProfileController extends AbstractController
 
     /**
      * ProfileController constructor.
-     * @param ProfileRepository $repository
-     * @param ProfileHandlerInterface $handler
      */
     public function __construct(ProfileRepository $repository, ProfileHandlerInterface $handler)
     {
@@ -34,18 +32,15 @@ class ProfileController extends AbstractController
         $this->handler = $handler;
     }
 
-
     /**
      * @Route("/profile", name="profile", methods={"GET","POST"})
-     * @param Request $request
-     * @return Response
+     *
      * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function profile(Request $request): Response
     {
         if (!$this->getUser()) {
-             return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('app_login');
         }
 
         $profile = $this->repository->findOneByUser($this->getUser()) ?? new Profile();
@@ -55,7 +50,7 @@ class ProfileController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->handler->setUser($this->getUser());
             $this->handler->handle($profile);
-            $this->addFlash('notice', "Success!");
+            $this->addFlash('notice', 'Success!');
 
             return $this->redirectToRoute('profile');
         }

@@ -10,34 +10,31 @@ use Symfony\Component\Routing\Annotation\Route;
 class BlogController extends AbstractController
 {
     /**
-     * @return Response
      * @Route("/blog", name="blog_list", methods={"GET","HEAD"})
      */
     public function list(): Response
     {
-        return $this->render('lucky/number.html.twig', ['number'=> 125]);
+        return $this->render('lucky/number.html.twig', ['number' => 125]);
     }
 
     /**
      * @param $id
-     * @return Response
      * @Route("/blog/view/{id?1}",
      *      name="blog_view",
      *     methods={"GET","HEAD"},
      *     requirements={"id"="\d+"},
      *    condition="context.getMethod() in ['GET', 'HEAD'] and request.headers.get('User-Agent') matches '/firefox/i'"
      * )
+     * @return Response
      */
     public function view(int $id): Response
     {
-        return $this->render('lucky/number.html.twig', ['number'=> $id]);
+        return $this->render('lucky/number.html.twig', ['number' => $id]);
     }
 
     /**
-     * @return RedirectResponse
      * @Route("/blog/index", name="blog_index", methods={"GET","HEAD"})
      */
-
     public function index(): RedirectResponse
     {
         // redirects to the "homepage" route
@@ -56,6 +53,6 @@ class BlogController extends AbstractController
 //        return $this->redirectToRoute('blog_show', $request->query->all());
 //
 //        // redirects externally
-         return $this->redirect('http://symfony.com/doc');
+        return $this->redirect('http://symfony.com/doc');
     }
 }

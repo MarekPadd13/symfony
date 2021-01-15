@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Handler\User\Confirmation;
-
 
 use App\Entity\User;
 use App\Repository\UserRepository;
@@ -10,8 +8,8 @@ use App\Repository\UserRepository;
 class Confirmation extends UserRepository
 {
     /**
-     * @param User $user
      * @param $message
+     *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
