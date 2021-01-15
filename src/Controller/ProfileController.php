@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Profile;
 use App\Form\ProfileType;
-use App\Handler\Profile\ProfileHandlerInterface;
+use App\Handler\Profile\ProfileHandler;
 use App\Repository\ProfileRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,17 +19,13 @@ class ProfileController extends AbstractController
     private $repository;
 
     /**
-     * @var ProfileHandlerInterface
-     */
-    private $handler;
-
-    /**
      * ProfileController constructor.
+     * @param ProfileRepository $repository
+     * @param ProfileHandler $handler
      */
-    public function __construct(ProfileRepository $repository, ProfileHandlerInterface $handler)
+    public function __construct(ProfileRepository $repository)
     {
         $this->repository = $repository;
-        $this->handler = $handler;
     }
 
     /**
@@ -48,10 +44,8 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->handler->setUser($this->getUser());
-            $this->handler->handle($profile);
+            $this->repository->save($profile, $this->getUser());
             $this->addFlash('notice', 'Success!');
-
             return $this->redirectToRoute('profile');
         }
 

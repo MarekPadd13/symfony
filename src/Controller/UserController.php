@@ -25,6 +25,8 @@ class UserController extends AbstractController
 
     /**
      * UserController constructor.
+     * @param ConfirmationHandlerInterface $handlerUserConfirmation
+     * @param RegistrationHandlerInterface $handlerUserRegistration
      */
     public function __construct(ConfirmationHandlerInterface $handlerUserConfirmation, RegistrationHandlerInterface $handlerUserRegistration)
     {
@@ -35,7 +37,8 @@ class UserController extends AbstractController
     /**
      * @Route("/registration", name="registration", methods={"GET","POST"})
      *
-     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
+     * @param Request $request
+     * @return Response
      */
     public function registration(Request $request): Response
     {
@@ -45,7 +48,7 @@ class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->handlerUserRegistration->handle($user);
-            $this->addFlash('notice', $this->handlerUserRegistration->successMessage());
+            $this->addFlash('notice', $this->handlerUserRegistration->getSuccessMessage());
 
             return $this->redirectToRoute('app_login');
         }
@@ -58,6 +61,8 @@ class UserController extends AbstractController
 
     /**
      * @Route("/confirm/{confirmToken}", name="user_confirm", methods={"GET"})
+     * @param User $user
+     * @return Response
      */
     public function confirm(User $user): Response
     {

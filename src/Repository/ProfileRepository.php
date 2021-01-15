@@ -53,4 +53,20 @@ class ProfileRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['user' => $user]);
     }
+
+    /**
+     * @param Profile $profile
+     * @param UserInterface $user
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function save(Profile $profile, UserInterface $user): void
+    {
+        if (!$profile->getUser()) {
+            $profile->setUser($user);
+            $this->_em->persist($profile);
+        }
+        $this->_em->flush();
+    }
+
 }

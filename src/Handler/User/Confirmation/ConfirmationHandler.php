@@ -3,34 +3,60 @@
 namespace App\Handler\User\Confirmation;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ConfirmationHandler implements ConfirmationHandlerInterface
 {
     /**
-     * @var Confirmation
+     * @var UserRepository
      */
-    private $confirmation;
+    private $repository;
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
     /**
      * ConfirmationHandler constructor.
+     * @param UserRepository $repository
+     * @param TranslatorInterface $translator
      */
-    public function __construct(Confirmation $confirmation)
+    public function __construct(UserRepository $repository, TranslatorInterface $translator)
     {
-        $this->confirmation = $confirmation;
+        $this->repository = $repository;
+        $this->translator = $translator;
     }
 
     /**
      * @param User $user
-     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function handle($user): void
+    public function handle(User $user): void
     {
-        $this->confirmation->confirm($user, $this->errorMessage());
+        $this->exception($user);
+        $user->setIsEnabled(true);
+        $this->repository->save($user);
     }
 
-    public function errorMessage(): string
+    /**
+     * @param User $user
+     * @throws \Exception
+     */
+    private function exception(User $user)
     {
-        return 'Your status is active';
+        if ($user->getIsEnabled()) {
+            throw new \Exception($this->getErrorMessage());
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getErrorMessage(): string
+    {
+        return $this->translator->trans('Your status is active');
     }
 }

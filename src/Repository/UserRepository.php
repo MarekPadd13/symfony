@@ -67,4 +67,19 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
     }
     */
+
+    /**
+     * @param User $user
+     * @param bool $per
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function save(User $user, $per = false)
+    {
+        if ($per) {
+            $this->_em->persist($user);
+        }
+        $this->_em->flush();
+    }
 }

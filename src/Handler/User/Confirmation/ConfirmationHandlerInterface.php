@@ -6,5 +6,5 @@ use App\Handler\HandlerInterface;
 
 interface ConfirmationHandlerInterface extends HandlerInterface
 {
-    public function errorMessage(): string;
+    public function getErrorMessage(): string;
 }

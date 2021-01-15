@@ -6,5 +6,5 @@ use App\Handler\HandlerInterface;
 
 interface RegistrationHandlerInterface extends HandlerInterface
 {
-    public function successMessage(): string;
+    public function getSuccessMessage(): string;
 }

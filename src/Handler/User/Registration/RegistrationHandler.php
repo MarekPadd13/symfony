@@ -3,16 +3,13 @@
 namespace App\Handler\User\Registration;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationHandler implements RegistrationHandlerInterface
 {
-    /**
-     * @var Registration
-     */
-    private $registration;
-
     /**
      * @var ConfirmationMailMailer
      */
@@ -24,31 +21,56 @@ class RegistrationHandler implements RegistrationHandlerInterface
     private $password;
 
     /**
+     * @var ConfirmTokenGenerator
+     */
+    private $confirmTokenGenerator;
+
+    /**
+     * @var UserRepository
+     */
+    private $repository;
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
      * RegistrationHandler constructor.
-     * @param Registration $registration
+     *
      * @param ConfirmationMailMailer $confirmationMailMailer
      * @param Password $password
+     * @param UserRepository $repository
+     * @param ConfirmTokenGenerator $confirmTokenGenerator
      */
-    public function __construct(Registration $registration, ConfirmationMailMailer $confirmationMailMailer, Password $password)
+    public function __construct(ConfirmationMailMailer $confirmationMailMailer,
+                                Password $password,
+                                UserRepository $repository,
+                                ConfirmTokenGenerator $confirmTokenGenerator,
+                                TranslatorInterface $translator)
     {
-        $this->registration = $registration;
         $this->confirmationMailMailer = $confirmationMailMailer;
         $this->password = $password;
+        $this->confirmTokenGenerator = $confirmTokenGenerator;
+        $this->repository = $repository;
+        $this->translator = $translator;
     }
 
     /**
+     * @param User $user
      * @throws ORMException
      * @throws TransportExceptionInterface
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function handle(User $user)
+    public function handle(User $user): void
     {
+        $user->setConfirmToken($this->confirmTokenGenerator->generateConfirmToken());
         $this->password->encode($user);
-        $this->registration->registry($user);
+        $this->repository->save($user, true);
         $this->confirmationMailMailer->sendTo($user);
     }
 
-    public function successMessage(): string
+    public function getSuccessMessage(): string
     {
-        return 'Confirm your email';
+        return $this->translator->trans('Confirm your email');
     }
 }
