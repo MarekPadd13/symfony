@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Handler\User\Registration;
+namespace App\Handler\User\Reset;
 
 use App\Entity\User;
 use App\Factory\User\Mail\MailFactory;
@@ -8,7 +8,7 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
-class ConfirmationMailMailer
+class ResetMailMailer
 {
     /**
      * @var MailerInterface
@@ -22,7 +22,7 @@ class ConfirmationMailMailer
 
     /**
      * ConfirmationMailMailer constructor.
-     * @param MailFactory $confirmationMailFactory
+     * @param MailFactory $mailFactory
      * @param MailerInterface $mailer
      */
     public function __construct(MailFactory $mailFactory, MailerInterface $mailer)
@@ -41,8 +41,12 @@ class ConfirmationMailMailer
         $this->mailer->send($message);
     }
 
+    /**
+     * @param User $user
+     * @return TemplatedEmail
+     */
     private function createMessageFor(User $user): TemplatedEmail
     {
-        return $this->mailFactory->createMessageFor($user, 'Hello', 'registration');
+        return $this->mailFactory->createMessageFor($user, 'Reset', 'reset');
     }
 }

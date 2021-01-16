@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Handler\User\Registration;
+namespace App\Handler\User;
 
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
-class ConfirmTokenGenerator
+class TokenGenerator
 {
     /**
      * @var TokenGeneratorInterface
@@ -20,7 +20,7 @@ class ConfirmTokenGenerator
         $this->generator = $generator;
     }
 
-    public function generateConfirmToken(): string
+    public function generateToken(): string
     {
         return $this->generator->generateToken();
     }

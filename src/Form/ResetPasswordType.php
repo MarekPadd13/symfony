@@ -11,7 +11,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class RegisterType extends AbstractType
+class ResetPasswordType extends AbstractType
 {
     /**
      * @var TranslatorInterface
@@ -34,7 +34,6 @@ class RegisterType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('email', EmailType::class, ['required' => true, 'label' => $this->translator->trans('User.email')])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'first_options' => ['label' => $this->translator->trans('User.password.password')],

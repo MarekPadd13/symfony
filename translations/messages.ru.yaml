@@ -4,6 +4,8 @@ User:
     repeat: Повтор пароля
   email: Адрес электронной почты
 Registration: Регистрация
+Reset: Cброс
+Reset password: Cброс пароля
 Save: Сохранить
 Security:
   login: Логин

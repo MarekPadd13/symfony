@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Handler\User\Registration;
+namespace App\Handler\User\Reset;
 
 use App\Entity\User;
 use App\Handler\User\TokenGenerator;
@@ -9,17 +9,12 @@ use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class RegistrationHandler implements RegistrationHandlerInterface
+class ResetHandler implements ResetHandlerInterface
 {
     /**
-     * @var ConfirmationMailMailer
+     * @var ResetMailMailer
      */
-    private $confirmationMailMailer;
-
-    /**
-     * @var Password
-     */
-    private $password;
+    private $resetMailMailer;
 
     /**
      * @var TokenGenerator
@@ -37,15 +32,17 @@ class RegistrationHandler implements RegistrationHandlerInterface
 
     /**
      * RegistrationHandler constructor.
+     * @param ResetMailMailer $resetMailMailer
+     * @param UserRepository $repository
+     * @param TokenGenerator $tokenGenerator
+     * @param TranslatorInterface $translator
      */
-    public function __construct(ConfirmationMailMailer $confirmationMailMailer,
-                                Password $password,
+    public function __construct(ResetMailMailer $resetMailMailer,
                                 UserRepository $repository,
                                 TokenGenerator $tokenGenerator,
                                 TranslatorInterface $translator)
     {
-        $this->confirmationMailMailer = $confirmationMailMailer;
-        $this->password = $password;
+        $this->resetMailMailer = $resetMailMailer;
         $this->tokenGenerator = $tokenGenerator;
         $this->repository = $repository;
         $this->translator = $translator;
@@ -56,17 +53,35 @@ class RegistrationHandler implements RegistrationHandlerInterface
      * @throws ORMException
      * @throws TransportExceptionInterface
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function handle(User $user): void
     {
-        $user->setConfirmToken($this->tokenGenerator->generateToken());
-        $this->password->encode($user);
-        $this->repository->save($user, true);
-        $this->confirmationMailMailer->sendTo($user);
+        $userOne = $this->repository->findOneBy(['email' => $user->getEmail()]);
+        $this->exception($userOne);
+        $userOne->setConfirmToken($this->tokenGenerator->generateToken());
+        $this->repository->save($userOne);
+        $this->resetMailMailer->sendTo($userOne);
+    }
+
+    /**
+     * @param User $user
+     * @throws \Exception
+     */
+    private function exception(User $user)
+    {
+        if (!$user) {
+            throw new \Exception($this->getErrorMessage());
+        }
     }
 
     public function getSuccessMessage(): string
     {
         return $this->translator->trans('Confirm your email');
+    }
+
+    public function getErrorMessage(): string
+    {
+        return 'suka';
     }
 }
