@@ -32,10 +32,6 @@ class ResetHandler implements ResetHandlerInterface
 
     /**
      * RegistrationHandler constructor.
-     * @param ResetMailMailer $resetMailMailer
-     * @param UserRepository $repository
-     * @param TokenGenerator $tokenGenerator
-     * @param TranslatorInterface $translator
      */
     public function __construct(ResetMailMailer $resetMailMailer,
                                 UserRepository $repository,
@@ -65,10 +61,11 @@ class ResetHandler implements ResetHandlerInterface
     }
 
     /**
-     * @param User $user
+     * @param $user
+     *
      * @throws \Exception
      */
-    private function exception(User $user)
+    private function exception($user)
     {
         if (!$user) {
             throw new \Exception($this->getErrorMessage());
@@ -77,11 +74,11 @@ class ResetHandler implements ResetHandlerInterface
 
     public function getSuccessMessage(): string
     {
-        return $this->translator->trans('Confirm your email');
+        return $this->translator->trans('Your password reset email has been sent');
     }
 
     public function getErrorMessage(): string
     {
-        return 'suka';
+        return $this->translator->trans('Security.Error.email');
     }
 }

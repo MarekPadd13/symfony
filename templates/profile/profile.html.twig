@@ -3,6 +3,7 @@
 {% block title %}{% trans %}Profile.Title{% endtrans %}{% endblock %}
 {% block body %}
     <h1>{% trans %}Profile.Title{% endtrans %}</h1>
+    {{ include('logout.html.twig') }}
     {{ form_start(form) }}
     {{ form_widget(form) }}
     <button class="btn btn-success">{% trans %}Save{% endtrans %}</button>
