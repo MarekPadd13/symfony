@@ -56,20 +56,39 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?User
+    public function findOneBySomeFieldEmail($value)
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
+            ->andWhere('u.email = :val')
             ->setParameter('val', $value)
+            ->select(['u.email', 'u.isEnabled'])
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getResult();
     }
-    */
 
     /**
-     * @param User $user
+     * @return mixed
+     */
+    public function findBySelectEmailAndIsEnabled()
+    {
+        return $this->createQueryBuilder('u')
+            ->select(['u.email', 'u.isEnabled'])
+            ->orderBy('u.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param $email
+     *
+     * @return User|null
+     */
+    public function findByUserEmail($email)
+    {
+        return $this->findOneBy(['email' => $email]);
+    }
+
+    /**
      * @param bool $per
      *
      * @throws \Doctrine\ORM\ORMException
@@ -80,6 +99,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         if ($per) {
             $this->_em->persist($user);
         }
+        $this->_em->flush();
+    }
+
+    /**
+     * @param User $user
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function remove(User $user)
+    {
+        $this->_em->remove($user);
         $this->_em->flush();
     }
 }

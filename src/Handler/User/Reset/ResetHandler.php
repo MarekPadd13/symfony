@@ -57,7 +57,7 @@ class ResetHandler implements ResetHandlerInterface
      */
     public function handle(User $user): void
     {
-        $userOne = $this->repository->findOneBy(['email' => $user->getEmail()]);
+        $userOne = $this->repository->findByUserEmail($user->getEmail());
         $this->exception($userOne);
         $userOne->setConfirmToken($this->tokenGenerator->generateToken());
         $this->repository->save($userOne);
