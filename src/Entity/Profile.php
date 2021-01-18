@@ -33,7 +33,7 @@ class Profile
     private $firstName;
 
     /**
-     * @ORM\Column(type="string", length=180, nullable=true)
+     * @ORM\Column(type="string", length=180)
      */
     private $patronymic;
 
@@ -55,12 +55,31 @@ class Profile
      */
     private $user;
 
-    public function getUser(): ?User
+    /**
+     * Profile constructor.
+     * @param UserInterface $user
+     */
+    public function __construct(UserInterface $user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function preSetUser(): void
+    {
+        $this->setUser($this->user);
+    }
+
+    public function getUser(): UserInterface
     {
         return $this->user;
     }
 
     /**
+     * @param UserInterface $user
      * @return $this
      */
     public function setUser(UserInterface $user): self
@@ -71,7 +90,7 @@ class Profile
     }
 
     /**
-     * @return mixed
+     * @return $this
      */
     public function getId()
     {
@@ -79,7 +98,7 @@ class Profile
     }
 
     /**
-     * @return mixed
+     * @return $this
      */
     public function getLastName(): ?string
     {
@@ -87,7 +106,7 @@ class Profile
     }
 
     /**
-     * @param mixed $lastName
+     * @param $lastName
      */
     public function setLastName($lastName): void
     {
@@ -95,7 +114,7 @@ class Profile
     }
 
     /**
-     * @return mixed
+     * @return $this
      */
     public function getFirstName(): ?string
     {
@@ -103,7 +122,7 @@ class Profile
     }
 
     /**
-     * @param mixed $firstName
+     * @param $this
      */
     public function setFirstName($firstName): void
     {
@@ -111,7 +130,7 @@ class Profile
     }
 
     /**
-     * @return mixed
+     * @return $this
      */
     public function getPatronymic(): ?string
     {
@@ -119,23 +138,20 @@ class Profile
     }
 
     /**
-     * @param mixed $patronymic
+     * @param $patronymic
      */
     public function setPatronymic($patronymic): void
     {
         $this->patronymic = $patronymic;
     }
 
-    /**
-     * @return mixed
-     */
     public function getSex(): ?int
     {
         return $this->sex;
     }
 
     /**
-     * @param mixed $sex
+     * @param $sex
      */
     public function setSex($sex): void
     {
@@ -143,7 +159,7 @@ class Profile
     }
 
     /**
-     * @return mixed
+     * @return $this
      */
     public function getPhone(): ?string
     {
@@ -151,7 +167,7 @@ class Profile
     }
 
     /**
-     * @param mixed $phone
+     * @param $phone
      */
     public function setPhone($phone): void
     {

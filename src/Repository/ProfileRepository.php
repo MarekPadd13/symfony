@@ -56,17 +56,12 @@ class ProfileRepository extends ServiceEntityRepository
 
     /**
      * @param Profile $profile
-     * @param UserInterface $user
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function save(Profile $profile, UserInterface $user): void
+    public function save(Profile $profile): void
     {
-        if (!$profile->getUser()) {
-            $profile->setUser($user);
-            $this->_em->persist($profile);
-        }
+        $this->_em->persist($profile);
         $this->_em->flush();
     }
-
 }

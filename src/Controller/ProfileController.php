@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Profile;
 use App\Form\ProfileType;
-use App\Handler\Profile\ProfileHandler;
+use App\Helper\ProfileHelper;
 use App\Repository\ProfileRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +21,6 @@ class ProfileController extends AbstractController
     /**
      * ProfileController constructor.
      * @param ProfileRepository $repository
-     * @param ProfileHandler $handler
      */
     public function __construct(ProfileRepository $repository)
     {
@@ -33,19 +32,23 @@ class ProfileController extends AbstractController
      *
      * @throws \Doctrine\ORM\ORMException
      */
-    public function profile(Request $request): Response
+    public function formView(Request $request): Response
     {
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
         }
 
-        $profile = $this->repository->findOneByUser($this->getUser()) ?? new Profile();
+        $profile = $this->repository->findOneByUser($this->getUser()) ?? new Profile($this->getUser());
         $form = $this->createForm(ProfileType::class, $profile);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->repository->save($profile, $this->getUser());
+            if (!$profile->getPatronymic()) {
+                $profile->setPatronymic(ProfileHelper::DEFAUlT_PATRONYMIC);
+            }
+            $this->repository->save($profile);
             $this->addFlash('notice', 'Success!');
+
             return $this->redirectToRoute('profile');
         }
 
