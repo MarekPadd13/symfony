@@ -75,12 +75,12 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
 
         if (!$user) {
             // fail authentication with a custom error
-            throw new CustomUserMessageAuthenticationException($this->translator->trans('Security.Error.email'));
+            throw new CustomUserMessageAuthenticationException($this->getMessageErrorEmail());
         }
 
         if (!$user->getIsEnabled()) {
             // fail authentication with a custom error
-            throw new CustomUserMessageAuthenticationException($this->translator->trans('Security.Error.status'));
+            throw new CustomUserMessageAuthenticationException($this->getMessageErrorEmail());
         }
 
         return $user;
@@ -112,5 +112,21 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
     protected function getLoginUrl()
     {
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
+    }
+
+    /**
+     * @return string
+     */
+    public function getMessageErrorEmail()
+    {
+        return $this->translator->trans('Security.Error.email');
+    }
+
+    /**
+     * @return string
+     */
+    public function getMessageErrorStatus()
+    {
+        return $this->translator->trans('Security.Error.status');
     }
 }
