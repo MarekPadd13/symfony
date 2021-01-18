@@ -3,8 +3,9 @@
 namespace App\Handler\User\Registration;
 
 use App\Entity\User;
-use App\Handler\User\TokenGenerator;
 use App\Repository\UserRepository;
+use App\Service\TokenGenerator;
+use App\Service\UserPasswordEncoder;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -17,9 +18,9 @@ class RegistrationHandler implements RegistrationHandlerInterface
     private $confirmationMailMailer;
 
     /**
-     * @var Password
+     * @var UserPasswordEncoder
      */
-    private $password;
+    private $passwordEncoder;
 
     /**
      * @var TokenGenerator
@@ -37,15 +38,20 @@ class RegistrationHandler implements RegistrationHandlerInterface
 
     /**
      * RegistrationHandler constructor.
+     * @param ConfirmationMailMailer $confirmationMailMailer
+     * @param UserPasswordEncoder $passwordEncoder
+     * @param UserRepository $repository
+     * @param TokenGenerator $tokenGenerator
+     * @param TranslatorInterface $translator
      */
     public function __construct(ConfirmationMailMailer $confirmationMailMailer,
-                                Password $password,
+                                UserPasswordEncoder $passwordEncoder,
                                 UserRepository $repository,
                                 TokenGenerator $tokenGenerator,
                                 TranslatorInterface $translator)
     {
         $this->confirmationMailMailer = $confirmationMailMailer;
-        $this->password = $password;
+        $this->passwordEncoder = $passwordEncoder;
         $this->tokenGenerator = $tokenGenerator;
         $this->repository = $repository;
         $this->translator = $translator;
@@ -56,11 +62,12 @@ class RegistrationHandler implements RegistrationHandlerInterface
      * @throws ORMException
      * @throws TransportExceptionInterface
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function handle(User $user): void
     {
         $user->setConfirmToken($this->tokenGenerator->generateToken());
-        $this->password->encode($user);
+        $this->passwordEncoder->encode($user);
         $this->repository->save($user, true);
         $this->confirmationMailMailer->sendTo($user);
     }

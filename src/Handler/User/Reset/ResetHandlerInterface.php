@@ -2,7 +2,7 @@
 
 namespace App\Handler\User\Reset;
 
-use App\Handler\HandlerInterface;
+use App\Handler\User\HandlerInterface;
 
 interface ResetHandlerInterface extends HandlerInterface
 {

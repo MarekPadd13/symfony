@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Handler\User\Registration;
+namespace App\Service;
 
 use App\Entity\User;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
-class Password
+class UserPasswordEncoder
 {
     /**
      * @var UserPasswordEncoderInterface

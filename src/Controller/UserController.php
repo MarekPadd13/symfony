@@ -90,7 +90,7 @@ class UserController extends AbstractController
     {
         try {
             $this->handlerUserConfirmation->handle($user);
-            $this->addFlash('success', 'Ok');
+            $this->addFlash('success', $this->handlerUserConfirmation->getSuccessMessage());
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
         }
@@ -137,7 +137,7 @@ class UserController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $this->handlerUserNewPassword->handle($user);
-            $this->addFlash('success', 'Ok');
+            $this->addFlash('success', $this->handlerUserNewPassword->getSuccessMessage());
             return $this->redirectToRoute('app_login');
         }
         return $this->render('user/new_password.html.twig', [

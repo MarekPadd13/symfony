@@ -3,7 +3,7 @@
 namespace App\Handler\User\NewPassword;
 
 use App\Entity\User;
-use App\Handler\User\Registration\Password;
+use App\Service\UserPasswordEncoder;
 use App\Repository\UserRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -19,20 +19,21 @@ class NewPasswordHandler implements NewPasswordHandlerInterface
     private $translator;
 
     /**
-     * @var Password
+     * @var UserPasswordEncoder
      */
-    private $password;
+    private $passwordEncoder;
 
     /**
      * ConfirmationHandler constructor.
      * @param UserRepository $repository
+     * @param UserPasswordEncoder $passwordEncoder
      * @param TranslatorInterface $translator
      */
-    public function __construct(UserRepository $repository, Password $password, TranslatorInterface $translator)
+    public function __construct(UserRepository $repository, UserPasswordEncoder $passwordEncoder, TranslatorInterface $translator)
     {
         $this->repository = $repository;
         $this->translator = $translator;
-        $this->password = $password;
+        $this->passwordEncoder = $passwordEncoder;
     }
 
     /**
@@ -43,16 +44,15 @@ class NewPasswordHandler implements NewPasswordHandlerInterface
      */
     public function handle(User $user): void
     {
-        $this->password->encode($user);
+        $this->passwordEncoder->encode($user);
         $this->repository->save($user);
     }
-
 
     /**
      * @return string
      */
     public function getSuccessMessage(): string
     {
-        return $this->translator->trans('Your status is active');
+        return $this->translator->trans('Your password success upgraded');
     }
 }

@@ -36,20 +36,11 @@ class ConfirmationHandler implements ConfirmationHandlerInterface
      */
     public function handle(User $user): void
     {
-        $this->exception($user);
-        $user->setIsEnabled(true);
-        $this->repository->save($user);
-    }
-
-    /**
-     * @param User $user
-     * @throws \Exception
-     */
-    private function exception(User $user)
-    {
         if ($user->getIsEnabled()) {
             throw new \Exception($this->getErrorMessage());
         }
+        $user->setIsEnabled(true);
+        $this->repository->save($user);
     }
 
     /**
@@ -58,5 +49,13 @@ class ConfirmationHandler implements ConfirmationHandlerInterface
     public function getErrorMessage(): string
     {
         return $this->translator->trans('Your status is active');
+    }
+
+    /**
+     * @return string
+     */
+    public function getSuccessMessage(): string
+    {
+        return $this->translator->trans('Your email is confirmed');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Handler\User\Registration;
 
-use App\Handler\HandlerInterface;
+use App\Handler\User\HandlerInterface;
 
 interface RegistrationHandlerInterface extends HandlerInterface
 {
