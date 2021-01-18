@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Handler\User\Registration;
+namespace App\Handler\User;
 
 use App\Entity\User;
 use App\Factory\User\Mail\MailFactory;
@@ -8,7 +8,7 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
-class ConfirmationMailMailer
+class UserMailMailer
 {
     /**
      * @var MailerInterface
@@ -22,7 +22,7 @@ class ConfirmationMailMailer
 
     /**
      * ConfirmationMailMailer constructor.
-     * @param MailFactory $confirmationMailFactory
+     * @param MailFactory $mailFactory
      * @param MailerInterface $mailer
      */
     public function __construct(MailFactory $mailFactory, MailerInterface $mailer)
@@ -33,16 +33,24 @@ class ConfirmationMailMailer
 
     /**
      * @param User $user
+     * @param string $subject
+     * @param string $pathTemplate
      * @throws TransportExceptionInterface
      */
-    public function sendTo(User $user): void
+    public function sendTo(User $user, string $subject, string $pathTemplate): void
     {
-        $message = $this->createMessageFor($user);
+        $message = $this->createMessageFor($user, $subject, $pathTemplate);
         $this->mailer->send($message);
     }
 
-    private function createMessageFor(User $user): TemplatedEmail
+    /**
+     * @param User $user
+     * @param string $subject
+     * @param string $pathTemplate
+     * @return TemplatedEmail
+     */
+    private function createMessageFor(User $user, string $subject, string $pathTemplate): TemplatedEmail
     {
-        return $this->mailFactory->createMessageFor($user, 'Hello', 'registration');
+        return $this->mailFactory->createMessageFor($user, $subject, $pathTemplate);
     }
 }

@@ -37,7 +37,7 @@ class ConfirmationHandler implements ConfirmationHandlerInterface
     public function handle(User $user): void
     {
         if ($user->getIsEnabled()) {
-            throw new \Exception($this->getErrorMessage());
+            throw new \Exception($this->getErrorMessage(), 422);
         }
         $user->setIsEnabled(true);
         $this->repository->save($user);

@@ -52,12 +52,16 @@ class UserController extends AbstractController
             $request = $this->transformJsonBody($request);
             $email = $request->request->get('email');
             $password = $request->request->get('password');
-            if (!$request || !$email || !$password) {
-                throw new \Exception('Data no valid');
+            if (!$request) {
+                throw new \Exception('Error request', 500);
+            }
+
+            if (!$email || !$password) {
+                throw new \Exception('Data no valid', 422);
             }
 
             if ($this->repository->findByUserEmail($email)) {
-                throw new \Exception('Email yes in data base');
+                throw new \Exception('Email yes in data base', 422);
             }
 
             $user = new User();
@@ -74,40 +78,38 @@ class UserController extends AbstractController
             return $this->response($data);
         } catch (\Exception $e) {
             $data = [
-                'status' => 422,
+                'status' => $e->getCode(),
                 'errors' => $e->getMessage(),
             ];
-
-            return $this->response($data, 422);
+            return $this->response($data, $e->getCode());
         }
     }
 
     /**
-     * @param $email
+     * @param $id
      *
      * @return JsonResponse
-     * @Route("/user/{email}", name="user_get", methods={"GET"})
+     * @Route("/user/{id}", name="user_get", methods={"GET"})
      */
-    public function getShow($email)
+    public function getShow($id)
     {
-        $user = $this->repository->findOneBySomeFieldEmail($email);
+        $user = $this->repository->findOneBySomeFieldEmailOrId($id);
         if (!$user) {
             return $this->response($this->getDataNotFound(), 404);
         }
-
         return $this->response($user);
     }
 
     /**
-     * @param $email
+     * @param $id
      *
      * @return JsonResponse
-     * @Route("/update/{email}", name="user_put", methods={"PUT"})
+     * @Route("/confirm/{id}", name="user_confirm", methods={"PUT"})
      */
-    public function update($email)
+    public function confirm($id)
     {
         try {
-            $user = $this->repository->findByUserEmail($email);
+            $user = $this->repository->find($id);
             if (!$user) {
                 return $this->response($this->getDataNotFound(), 404);
             }
@@ -116,7 +118,6 @@ class UserController extends AbstractController
                 'status' => 200,
                 'errors' => 'User updated successfully',
             ];
-
             return $this->response($data);
         } catch (\Exception $e) {
             $data = [
@@ -129,17 +130,17 @@ class UserController extends AbstractController
     }
 
     /**
-     * @param $email
+     * @param $id
      *
      * @return JsonResponse
      *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @Route("/delete/{email}", name="user_delete", methods={"DELETE"})
+     * @Route("/delete/{id}", name="user_delete", methods={"DELETE"})
      */
-    public function delete($email)
+    public function delete($id)
     {
-        $user = $this->repository->findByUserEmail($email);
+        $user = $this->repository->find($id);
         if (!$user) {
             return $this->response($this->getDataNotFound(), 404);
         }
@@ -161,7 +162,7 @@ class UserController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function response($data, $status = 200, $headers = [])
+    private function response($data, $status = 200, $headers = [])
     {
         return new JsonResponse($data, $status, $headers);
     }
@@ -169,7 +170,7 @@ class UserController extends AbstractController
     /**
      * @return Request
      */
-    protected function transformJsonBody(Request $request)
+    private function transformJsonBody(Request $request)
     {
         $data = json_decode($request->getContent(), true);
 
@@ -185,7 +186,7 @@ class UserController extends AbstractController
     /**
      * @return array
      */
-    public function getDataNotFound()
+    private function getDataNotFound()
     {
         $data = [
             'status' => 404,

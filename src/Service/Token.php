@@ -2,12 +2,12 @@
 
 namespace App\Service;
 
-class TokenGenerator
+class Token
 {
     /**
      * @throws \Exception
      */
-    public function generateToken(): string
+    public function generate(): string
     {
         $bytes = random_bytes(32);
 

@@ -3,23 +3,26 @@
 namespace App\Handler\User\Reset;
 
 use App\Entity\User;
+use App\Handler\User\UserMailMailer;
 use App\Repository\UserRepository;
-use App\Service\TokenGenerator;
+use App\Service\Token;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ResetHandler implements ResetHandlerInterface
 {
+    const PATH_TEMPLATE_MAIL = 'reset';
+    const SUBJECT_MAIL = 'RESET';
     /**
-     * @var ResetMailMailer
+     * @var UserMailMailer
      */
-    private $resetMailMailer;
+    private $userMailMailer;
 
     /**
-     * @var TokenGenerator
+     * @var Token
      */
-    private $tokenGenerator;
+    private $token;
 
     /**
      * @var UserRepository
@@ -32,18 +35,18 @@ class ResetHandler implements ResetHandlerInterface
 
     /**
      * RegistrationHandler constructor.
-     * @param ResetMailMailer $resetMailMailer
+     * @param UserMailMailer $userMailMailer
      * @param UserRepository $repository
-     * @param TokenGenerator $tokenGenerator
+     * @param Token $token
      * @param TranslatorInterface $translator
      */
-    public function __construct(ResetMailMailer $resetMailMailer,
+    public function __construct(UserMailMailer $userMailMailer,
                                 UserRepository $repository,
-                                TokenGenerator $tokenGenerator,
+                                Token $token,
                                 TranslatorInterface $translator)
     {
-        $this->resetMailMailer = $resetMailMailer;
-        $this->tokenGenerator = $tokenGenerator;
+        $this->userMailMailer = $userMailMailer;
+        $this->token = $token;
         $this->repository = $repository;
         $this->translator = $translator;
     }
@@ -59,11 +62,11 @@ class ResetHandler implements ResetHandlerInterface
     {
         $userOne = $this->repository->findByUserEmail($user->getEmail());
         if (!$userOne) {
-            throw new \Exception($this->getErrorMessage());
+            throw new \Exception($this->getErrorMessage(), 422);
         }
-        $userOne->setConfirmToken($this->tokenGenerator->generateToken());
+        $userOne->setConfirmToken($this->token->generate());
         $this->repository->save($userOne);
-        $this->resetMailMailer->sendTo($userOne);
+        $this->userMailMailer->sendTo($userOne, self::SUBJECT_MAIL, self::PATH_TEMPLATE_MAIL);
     }
 
     public function getSuccessMessage(): string

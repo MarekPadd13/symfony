@@ -3,8 +3,9 @@
 namespace App\Handler\User\Registration;
 
 use App\Entity\User;
+use App\Handler\User\UserMailMailer;
 use App\Repository\UserRepository;
-use App\Service\TokenGenerator;
+use App\Service\Token;
 use App\Service\UserPasswordEncoder;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -12,10 +13,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationHandler implements RegistrationHandlerInterface
 {
+    const PATH_TEMPLATE_MAIL = 'registration';
+    const SUBJECT_MAIL = 'HELLO';
     /**
-     * @var ConfirmationMailMailer
+     * @var UserMailMailer
      */
-    private $confirmationMailMailer;
+    private $userMailMailer;
 
     /**
      * @var UserPasswordEncoder
@@ -23,9 +26,9 @@ class RegistrationHandler implements RegistrationHandlerInterface
     private $passwordEncoder;
 
     /**
-     * @var TokenGenerator
+     * @var Token
      */
-    private $tokenGenerator;
+    private $token;
 
     /**
      * @var UserRepository
@@ -38,21 +41,21 @@ class RegistrationHandler implements RegistrationHandlerInterface
 
     /**
      * RegistrationHandler constructor.
-     * @param ConfirmationMailMailer $confirmationMailMailer
+     * @param UserMailMailer $userMailMailer
      * @param UserPasswordEncoder $passwordEncoder
      * @param UserRepository $repository
-     * @param TokenGenerator $tokenGenerator
+     * @param Token $token
      * @param TranslatorInterface $translator
      */
-    public function __construct(ConfirmationMailMailer $confirmationMailMailer,
+    public function __construct(UserMailMailer $userMailMailer,
                                 UserPasswordEncoder $passwordEncoder,
                                 UserRepository $repository,
-                                TokenGenerator $tokenGenerator,
+                                Token $token,
                                 TranslatorInterface $translator)
     {
-        $this->confirmationMailMailer = $confirmationMailMailer;
+        $this->userMailMailer = $userMailMailer;
         $this->passwordEncoder = $passwordEncoder;
-        $this->tokenGenerator = $tokenGenerator;
+        $this->token = $token;
         $this->repository = $repository;
         $this->translator = $translator;
     }
@@ -66,10 +69,10 @@ class RegistrationHandler implements RegistrationHandlerInterface
      */
     public function handle(User $user): void
     {
-        $user->setConfirmToken($this->tokenGenerator->generateToken());
+        $user->setConfirmToken($this->token->generate());
         $this->passwordEncoder->encode($user);
         $this->repository->save($user, true);
-        $this->confirmationMailMailer->sendTo($user);
+        $this->userMailMailer->sendTo($user, self::SUBJECT_MAIL, self::PATH_TEMPLATE_MAIL);
     }
 
     public function getSuccessMessage(): string
