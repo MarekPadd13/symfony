@@ -50,12 +50,11 @@ class UserController extends AbstractController
     {
         try {
             $request = $this->transformJsonBody($request);
-            $email = $request->request->get('email');
-            $password = $request->request->get('password');
             if (!$request) {
                 throw new \Exception('Error request', 500);
             }
-
+            $email = $request->request->get('email');
+            $password = $request->request->get('password');
             if (!$email || !$password) {
                 throw new \Exception('Data no valid', 422);
             }
