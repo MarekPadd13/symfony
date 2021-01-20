@@ -18,14 +18,18 @@ class ProfileType extends AbstractType
     private $translator;
 
     /**
-     * RegisterType constructor.
+     * ProfileType constructor.
      */
     public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('lastName', TextType::class, ['required' => true, 'label' => $this->translator->trans('Profile.LastName')])
@@ -44,7 +48,7 @@ class ProfileType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Profile::class,

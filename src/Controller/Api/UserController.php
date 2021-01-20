@@ -18,8 +18,19 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class UserController extends AbstractController
 {
+    /**
+     * @var UserRepository
+     */
     private $repository;
+
+    /**
+     * @var RegistrationHandlerInterface
+     */
     private $handlerUserRegistration;
+
+    /**
+     * @var ConfirmationHandlerInterface
+     */
     private $handlerUserConfirmation;
 
     public function __construct(UserRepository $repository, RegistrationHandlerInterface $handlerUserRegistration, ConfirmationHandlerInterface $handlerUserConfirmation)
@@ -50,9 +61,6 @@ class UserController extends AbstractController
     {
         try {
             $request = $this->transformJsonBody($request);
-            if (!$request) {
-                throw new \Exception('Error request', 500);
-            }
             $email = $request->request->get('email');
             $password = $request->request->get('password');
             if (!$email || !$password) {
@@ -80,12 +88,13 @@ class UserController extends AbstractController
                 'status' => $e->getCode(),
                 'errors' => $e->getMessage(),
             ];
+
             return $this->response($data, $e->getCode());
         }
     }
 
     /**
-     * @param $id
+     * @param int $id
      *
      * @return JsonResponse
      * @Route("/user/{id}", name="user_get", methods={"GET"})
@@ -94,13 +103,14 @@ class UserController extends AbstractController
     {
         $user = $this->repository->findOneBySomeFieldEmailOrId($id);
         if (!$user) {
-            return $this->response($this->getDataNotFound(), 404);
+            return $this->response($this->getNotFoundMessage(), 404);
         }
+
         return $this->response($user);
     }
 
     /**
-     * @param $id
+     * @param int $id
      *
      * @return JsonResponse
      * @Route("/confirm/{id}", name="user_confirm", methods={"PUT"})
@@ -110,17 +120,18 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
             if (!$user) {
-                return $this->response($this->getDataNotFound(), 404);
+                return $this->response($this->getNotFoundMessage(), 404);
             }
             $this->handlerUserConfirmation->handle($user);
             $data = [
                 'status' => 200,
                 'errors' => 'User updated successfully',
             ];
+
             return $this->response($data);
         } catch (\Exception $e) {
             $data = [
-                'status' => 422,
+                'status' => $e->getCode(),
                 'errors' => $e->getMessage(),
             ];
 
@@ -129,7 +140,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @param $id
+     * @param int $id
      *
      * @return JsonResponse
      *
@@ -141,7 +152,7 @@ class UserController extends AbstractController
     {
         $user = $this->repository->find($id);
         if (!$user) {
-            return $this->response($this->getDataNotFound(), 404);
+            return $this->response($this->getNotFoundMessage(), 404);
         }
         $this->repository->remove($user);
         $data = [
@@ -156,12 +167,12 @@ class UserController extends AbstractController
      * Returns a JSON response.
      *
      * @param array $data
-     * @param $status
+     * @param int   $status
      * @param array $headers
      *
      * @return JsonResponse
      */
-    private function response($data, $status = 200, $headers = [])
+    private function response($data, $status = 200, $headers = []): JsonResponse
     {
         return new JsonResponse($data, $status, $headers);
     }
@@ -169,7 +180,7 @@ class UserController extends AbstractController
     /**
      * @return Request
      */
-    private function transformJsonBody(Request $request)
+    private function transformJsonBody(Request $request): Request
     {
         $data = json_decode($request->getContent(), true);
 
@@ -185,7 +196,7 @@ class UserController extends AbstractController
     /**
      * @return array
      */
-    private function getDataNotFound()
+    private function getNotFoundMessage()
     {
         $data = [
             'status' => 404,

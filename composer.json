@@ -49,6 +49,7 @@
         "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
+        "phpstan/phpstan": "^0.12.68",
         "symfony/browser-kit": "^5.1",
         "symfony/debug-bundle": "^5.1",
         "symfony/maker-bundle": "^1.0",
@@ -93,6 +94,12 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "phpstan": "phpstan analyse -c phpstan.neon",
+        "tests": "phpunit",
+        "ci": [
+            "@phpstan",
+            "@tests"
         ]
     },
     "conflict": {

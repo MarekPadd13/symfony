@@ -25,6 +25,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
      *
+     * @param UserInterface $user
+     * @param string $newEncodedPassword
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
@@ -56,6 +58,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
     */
 
+    /**
+     * @param int|string $value
+     *
+     * @return mixed
+     */
     public function findOneBySomeFieldEmailOrId($value)
     {
         return $this->createQueryBuilder('u')
@@ -80,11 +87,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @param $email
+     * @param string $email
      *
      * @return User|null
      */
-    public function findByUserEmail($email)
+    public function findByUserEmail(string $email)
     {
         return $this->findOneBy(['email' => $email]);
     }
@@ -96,7 +103,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function save(User $user, $persist = false)
+    public function save(User $user, $persist = false): void
     {
         if ($persist) {
             $this->_em->persist($user);
@@ -104,12 +111,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->_em->flush();
     }
 
+
     /**
      * @param User $user
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function remove(User $user)
+    public function remove(User $user): void
     {
         $this->_em->remove($user);
         $this->_em->flush();

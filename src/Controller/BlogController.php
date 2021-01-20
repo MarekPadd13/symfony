@@ -18,7 +18,7 @@ class BlogController extends AbstractController
     }
 
     /**
-     * @param $id
+     * @param int $id
      * @Route("/blog/view/{id?1}",
      *      name="blog_view",
      *     methods={"GET","HEAD"},

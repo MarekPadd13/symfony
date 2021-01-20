@@ -39,17 +39,11 @@ class UserController extends AbstractController
 
     /**
      * UserController constructor.
-     * @param ConfirmationHandlerInterface $handlerUserConfirmation
-     * @param RegistrationHandlerInterface $handlerUserRegistration
-     * @param ResetHandlerInterface $handlerUserReset
-     * @param NewPasswordHandlerInterface $handlerUserNewPassword
      */
     public function __construct(ConfirmationHandlerInterface $handlerUserConfirmation,
                                 RegistrationHandlerInterface $handlerUserRegistration,
                                 ResetHandlerInterface $handlerUserReset, NewPasswordHandlerInterface $handlerUserNewPassword
-
-    )
-    {
+    ) {
         $this->handlerUserRegistration = $handlerUserRegistration;
         $this->handlerUserConfirmation = $handlerUserConfirmation;
         $this->handlerUserReset = $handlerUserReset;
@@ -58,9 +52,6 @@ class UserController extends AbstractController
 
     /**
      * @Route("/registration", name="registration", methods={"GET","POST"})
-     *
-     * @param Request $request
-     * @return Response
      */
     public function registration(Request $request): Response
     {
@@ -83,8 +74,6 @@ class UserController extends AbstractController
 
     /**
      * @Route("/confirm/{confirmToken}", name="user_confirm", methods={"GET"})
-     * @param User $user
-     * @return Response
      */
     public function confirm(User $user): Response
     {
@@ -101,8 +90,6 @@ class UserController extends AbstractController
     /**
      * @Route("/reset", name="reset", methods={"GET","POST"})
      *
-     * @param Request $request
-     * @return Response
      * @throws \Exception
      */
     public function reset(Request $request): Response
@@ -112,15 +99,18 @@ class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $result = $request->request->get('email_user');
-            $user = (new User())->setEmail($result['email']);
+            $user = new User();
+            $user->setEmail($result['email']);
             try {
                 $this->handlerUserReset->handle($user);
                 $this->addFlash('success', $this->handlerUserReset->getSuccessMessage());
+
                 return $this->redirectToRoute('app_login');
             } catch (\Exception $e) {
                 $this->addFlash('error', $e->getMessage());
             }
         }
+
         return $this->render('user/reset.html.twig', [
             'form' => $form->createView(),
         ]);
@@ -128,8 +118,6 @@ class UserController extends AbstractController
 
     /**
      * @Route("/add-new-password/{confirmToken}", name="add_new_password", methods={"GET","POST"})
-     * @param User $user
-     * @return Response
      */
     public function addNewPassword(Request $request, User $user): Response
     {
@@ -138,8 +126,10 @@ class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->handlerUserNewPassword->handle($user);
             $this->addFlash('success', $this->handlerUserNewPassword->getSuccessMessage());
+
             return $this->redirectToRoute('app_login');
         }
+
         return $this->render('user/new_password.html.twig', [
             'form' => $form->createView(),
         ]);

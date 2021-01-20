@@ -20,7 +20,6 @@ class ProfileController extends AbstractController
 
     /**
      * ProfileController constructor.
-     * @param ProfileRepository $repository
      */
     public function __construct(ProfileRepository $repository)
     {
@@ -31,6 +30,7 @@ class ProfileController extends AbstractController
      * @Route("/profile", name="profile", methods={"GET","POST"})
      *
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function formView(Request $request): Response
     {
@@ -38,7 +38,7 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $profile = $this->repository->findOneByUser($this->getUser()) ?? new Profile($this->getUser());
+        $profile = $this->getProfile();
         $form = $this->createForm(ProfileType::class, $profile);
         $form->handleRequest($request);
 
@@ -55,5 +55,18 @@ class ProfileController extends AbstractController
         return $this->render('profile/profile.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @return Profile
+     * @throws \Exception
+     */
+    private function getProfile(): Profile
+    {
+        if (!$this->getUser()) {
+            throw new \Exception('syke');
+        }
+
+        return $this->repository->findOneByUser($this->getUser()) ?? new Profile($this->getUser());
     }
 }

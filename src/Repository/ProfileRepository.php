@@ -49,7 +49,11 @@ class ProfileRepository extends ServiceEntityRepository
     }
     */
 
-    public function findOneByUser(UserInterface $user): ?Profile
+    /**
+     * @param UserInterface|null $user
+     * @return Profile|null
+     */
+    public function findOneByUser(UserInterface $user = null): ?Profile
     {
         return $this->findOneBy(['user' => $user]);
     }

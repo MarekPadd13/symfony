@@ -9,7 +9,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @ORM\Entity(repositoryClass="App\Repository\UserRepository", repositoryClass=UserRepository::class)
  * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("email")
  */
@@ -19,22 +19,28 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     *
+     * @var int
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      * @Assert\Email
+     *
+     * @var string
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
+     *
+     * @var array
      */
     private $roles = [];
 
     /**
-     * @var string The hashed password
+     * @var string
      * @ORM\Column(type="string")
      * @Assert\Length(
      *      min = 8,
@@ -44,7 +50,7 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @var string The hash confirm token
+     * @var string
      * @ORM\Column(type="string")
      */
     private $confirmToken;
@@ -70,8 +76,10 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Profile", mappedBy="user")
+     *
+     * @var Profile
      */
-    protected $profile;
+    private $profile;
 
     /**
      * @ORM\PrePersist
@@ -86,92 +94,92 @@ class User implements UserInterface
         $this->setUpdatedAt($dateTimeImmutable);
     }
 
-    public function getId(): ?int
+    /**
+     * @return int
+     */
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function getEmail(): ?string
+    /**
+     * @return string
+     */
+    public function getEmail(): string
     {
         return $this->email;
     }
 
     /**
-     * @return $this
+     * @param string $email
      */
-    public function setEmail(string $email): self
+    public function setEmail(string $email): void
     {
         $this->email = $email;
-
-        return $this;
     }
 
-    public function getConfirmToken(): ?string
+    /**
+     * @return string
+     */
+    public function getConfirmToken(): string
     {
         return $this->confirmToken;
     }
 
     /**
-     * @param $confirmToken
-     *
-     * @return $this
+     * @param string $confirmToken
      */
-    public function setConfirmToken($confirmToken): self
+    public function setConfirmToken(string $confirmToken): void
     {
         $this->confirmToken = $confirmToken;
-
-        return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function getIsEnabled(): bool
     {
         return $this->isEnabled;
     }
 
     /**
-     * @return $this
+     * @param bool $isEnabled
      */
-    public function setIsEnabled(bool $isEnabled): self
+    public function setIsEnabled(bool $isEnabled): void
     {
         $this->isEnabled = $isEnabled;
-
-        return $this;
     }
 
     /**
-     * @return \DateTimeImmutable |null
+     * @return \DateTimeImmutable|null
      */
-    public function getCreatedAt(): ? \DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
     /**
-     * @return $this
+     * @param \DateTimeImmutable $dateTimeImmutable
      */
-    public function setCreatedAt(\DateTimeImmutable $dateTimeImmutable): self
+    public function setCreatedAt(\DateTimeImmutable $dateTimeImmutable): void
     {
         $this->createdAt = $dateTimeImmutable;
-
-        return $this;
     }
 
     /**
-     * @return \DateTimeImmutable |null
+     * @return \DateTimeImmutable
      */
-    public function getUpdatedTime(): ? \DateTimeImmutable
+    public function getUpdatedTime(): \DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
     /**
-     * @return $this
+     * @param \DateTimeImmutable $dateTimeImmutable
      */
-    public function setUpdatedAt(\DateTimeImmutable $dateTimeImmutable): self
+    public function setUpdatedAt(\DateTimeImmutable $dateTimeImmutable): void
     {
         $this->updatedAt = $dateTimeImmutable;
-
-        return $this;
     }
 
     /**
@@ -193,17 +201,16 @@ class User implements UserInterface
     }
 
     /**
-     * @return $this
+     * @param array $roles
      */
-    public function setRoles(array $roles): self
+    public function setRoles(array $roles): void
     {
         $this->roles = $roles;
-
-        return $this;
     }
 
+
     /**
-     * @see UserInterface
+     * @return string
      */
     public function getPassword(): string
     {
@@ -211,29 +218,34 @@ class User implements UserInterface
     }
 
     /**
-     * @return $this
+     * @param string $password
+     * @return void
      */
-    public function setPassword(string $password): self
+    public function setPassword(string $password): void
     {
         $this->password = $password;
-
-        return $this;
     }
 
     /**
-     * @see UserInterface
+     * Returns the salt that was originally used to encode the password.
+     *
+     * This can return null if the password was not encoded using a salt.
+     *
+     * @return string|null The salt
      */
     public function getSalt()
     {
-        // not needed when using the "bcrypt" algorithm in security.yaml
+        // TODO: Implement getSalt() method.
     }
 
     /**
-     * @see UserInterface
+     * Removes sensitive data from the user.
+     *
+     * This is important if, at any given point, sensitive information like
+     * the plain-text password is stored on this object.
      */
     public function eraseCredentials()
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        // TODO: Implement eraseCredentials() method.
     }
 }

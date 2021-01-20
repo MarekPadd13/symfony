@@ -1,8 +1,9 @@
 <?php
 
 $finder = PhpCsFixer\Finder::create()
-    ->in(__DIR__)
-    ->exclude('var')
+      ->exclude(['assets', 'node_modules', 'public', 'vendor'])
+      ->notPath('*')
+      ->in(__DIR__)
 ;
 
 return PhpCsFixer\Config::create()
