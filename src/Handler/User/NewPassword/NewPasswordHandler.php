@@ -3,8 +3,8 @@
 namespace App\Handler\User\NewPassword;
 
 use App\Entity\User;
-use App\Service\UserPasswordEncoder;
 use App\Repository\UserRepository;
+use App\Security\UserPasswordEncoder;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class NewPasswordHandler implements NewPasswordHandlerInterface

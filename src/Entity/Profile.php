@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\ProfileRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -39,7 +38,7 @@ class Profile
      * @var string
      * @ORM\Column(type="string", length=180)
      */
-    private $patronymic;
+    private $patronymic = '';
 
     /**
      * @var string

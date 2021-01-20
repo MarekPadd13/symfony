@@ -5,7 +5,7 @@ namespace App\Handler\User\Reset;
 use App\Entity\User;
 use App\Handler\User\UserMailMailer;
 use App\Repository\UserRepository;
-use App\Service\Token;
+use App\Security\TokenGenerator;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -14,13 +14,14 @@ class ResetHandler implements ResetHandlerInterface
 {
     const PATH_TEMPLATE_MAIL = 'reset';
     const SUBJECT_MAIL = 'RESET';
+    const NUMBER_TOKEN_GENERATOR = 32;
     /**
      * @var UserMailMailer
      */
     private $userMailMailer;
 
     /**
-     * @var Token
+     * @var TokenGenerator
      */
     private $token;
 
@@ -37,16 +38,14 @@ class ResetHandler implements ResetHandlerInterface
      * RegistrationHandler constructor.
      * @param UserMailMailer $userMailMailer
      * @param UserRepository $repository
-     * @param Token $token
      * @param TranslatorInterface $translator
      */
     public function __construct(UserMailMailer $userMailMailer,
                                 UserRepository $repository,
-                                Token $token,
                                 TranslatorInterface $translator)
     {
         $this->userMailMailer = $userMailMailer;
-        $this->token = $token;
+        $this->token = new TokenGenerator(self::NUMBER_TOKEN_GENERATOR);
         $this->repository = $repository;
         $this->translator = $translator;
     }

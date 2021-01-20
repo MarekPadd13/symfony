@@ -169,7 +169,6 @@ class UserController extends AbstractController
      * @param array $data
      * @param int   $status
      * @param array $headers
-     *
      * @return JsonResponse
      */
     private function response($data, $status = 200, $headers = []): JsonResponse
@@ -178,16 +177,19 @@ class UserController extends AbstractController
     }
 
     /**
+     * @param Request $request
      * @return Request
      */
     private function transformJsonBody(Request $request): Request
     {
-        $data = json_decode($request->getContent(), true);
-
+        $json = $request->getContent();
+        $data = null;
+        if (is_string($json)) {
+            $data = json_decode($json, true);
+        }
         if (null === $data) {
             return $request;
         }
-
         $request->request->replace($data);
 
         return $request;

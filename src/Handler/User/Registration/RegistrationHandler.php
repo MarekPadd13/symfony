@@ -5,8 +5,8 @@ namespace App\Handler\User\Registration;
 use App\Entity\User;
 use App\Handler\User\UserMailMailer;
 use App\Repository\UserRepository;
-use App\Service\Token;
-use App\Service\UserPasswordEncoder;
+use App\Security\TokenGenerator;
+use App\Security\UserPasswordEncoder;
 use Doctrine\ORM\ORMException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -15,6 +15,7 @@ class RegistrationHandler implements RegistrationHandlerInterface
 {
     const PATH_TEMPLATE_MAIL = 'registration';
     const SUBJECT_MAIL = 'HELLO';
+    const NUMBER_TOKEN_GENERATOR = 32;
     /**
      * @var UserMailMailer
      */
@@ -26,7 +27,7 @@ class RegistrationHandler implements RegistrationHandlerInterface
     private $passwordEncoder;
 
     /**
-     * @var Token
+     * @var TokenGenerator
      */
     private $token;
 
@@ -44,18 +45,16 @@ class RegistrationHandler implements RegistrationHandlerInterface
      * @param UserMailMailer $userMailMailer
      * @param UserPasswordEncoder $passwordEncoder
      * @param UserRepository $repository
-     * @param Token $token
      * @param TranslatorInterface $translator
      */
     public function __construct(UserMailMailer $userMailMailer,
                                 UserPasswordEncoder $passwordEncoder,
                                 UserRepository $repository,
-                                Token $token,
                                 TranslatorInterface $translator)
     {
         $this->userMailMailer = $userMailMailer;
         $this->passwordEncoder = $passwordEncoder;
-        $this->token = $token;
+        $this->token = new TokenGenerator(self::NUMBER_TOKEN_GENERATOR);
         $this->repository = $repository;
         $this->translator = $translator;
     }

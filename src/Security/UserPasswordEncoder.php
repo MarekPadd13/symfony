@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Security;
 
 use App\Entity\User;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;

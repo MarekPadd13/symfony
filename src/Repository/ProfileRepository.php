@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Profile;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -50,10 +51,10 @@ class ProfileRepository extends ServiceEntityRepository
     */
 
     /**
-     * @param UserInterface|null $user
+     * @param User $user
      * @return Profile|null
      */
-    public function findOneByUser(UserInterface $user = null): ?Profile
+    public function findOneByUser(User $user): ?Profile
     {
         return $this->findOneBy(['user' => $user]);
     }

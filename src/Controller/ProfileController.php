@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Profile;
+use App\Entity\User;
 use App\Form\ProfileType;
-use App\Helper\ProfileHelper;
 use App\Repository\ProfileRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +20,7 @@ class ProfileController extends AbstractController
 
     /**
      * ProfileController constructor.
+     * @param ProfileRepository $repository
      */
     public function __construct(ProfileRepository $repository)
     {
@@ -31,21 +32,18 @@ class ProfileController extends AbstractController
      *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function formView(Request $request): Response
     {
         if (!$this->getUser()) {
             return $this->redirectToRoute('app_login');
         }
-
         $profile = $this->getProfile();
         $form = $this->createForm(ProfileType::class, $profile);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!$profile->getPatronymic()) {
-                $profile->setPatronymic(ProfileHelper::DEFAUlT_PATRONYMIC);
-            }
             $this->repository->save($profile);
             $this->addFlash('notice', 'Success!');
 
@@ -58,15 +56,13 @@ class ProfileController extends AbstractController
     }
 
     /**
-     * @return Profile
      * @throws \Exception
      */
     private function getProfile(): Profile
     {
-        if (!$this->getUser()) {
-            throw new \Exception('syke');
+        if ($this->getUser() instanceof User) {
+            return $this->repository->findOneByUser($this->getUser()) ?? new Profile($this->getUser());
         }
-
-        return $this->repository->findOneByUser($this->getUser()) ?? new Profile($this->getUser());
+        throw new \Exception('Error');
     }
 }
