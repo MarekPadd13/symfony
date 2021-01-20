@@ -63,6 +63,6 @@ class ProfileController extends AbstractController
         if ($this->getUser() instanceof User) {
             return $this->repository->findOneByUser($this->getUser()) ?? new Profile($this->getUser());
         }
-        throw new \Exception('Error');
+        throw new \Exception('Unknown object');
     }
 }

@@ -59,15 +59,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     */
 
     /**
-     * @param int|string $value
+     * @param int $value
      *
      * @return mixed
      */
-    public function findOneBySomeFieldEmailOrId($value)
+    public function findOneBySomeFieldId(int $value)
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.email = :val')
-            ->orWhere('u.id = :val')
+            ->andWhere('u.id = :val')
             ->setParameter('val', $value)
             ->select(['u.email', 'u.isEnabled'])
             ->getQuery()

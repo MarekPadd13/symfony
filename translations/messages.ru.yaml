@@ -3,6 +3,14 @@ User:
     password: Пароль
     repeat: Повтор пароля
   email: Адрес электронной почты
+  Api:
+    messages:
+      Data no valid: Данные не действительны
+      User not found: Пользователь не найден
+      User added successfully: Пользователь успешно добавлен
+      User updated successfully: Пользователь успешно обновлен
+      User deleted successfully: Пользователь успешно удален
+      Such e-mail address already exists in the system: Такой адрес электронной почты уже существует в системе
 Registration: Регистрация
 Reset: Cброс
 Reset password: Cброс пароля

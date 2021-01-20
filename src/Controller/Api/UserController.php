@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class UserController.
@@ -18,6 +19,9 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class UserController extends AbstractController
 {
+    const CODE_NOT_VALID = 422;
+    const CODE_SUCCESS = 200;
+    const CODE_NOT_FOUND = 404;
     /**
      * @var UserRepository
      */
@@ -33,9 +37,18 @@ class UserController extends AbstractController
      */
     private $handlerUserConfirmation;
 
-    public function __construct(UserRepository $repository, RegistrationHandlerInterface $handlerUserRegistration, ConfirmationHandlerInterface $handlerUserConfirmation)
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    public function __construct(UserRepository $repository,
+                                TranslatorInterface $translator,
+                                RegistrationHandlerInterface $handlerUserRegistration,
+                                ConfirmationHandlerInterface $handlerUserConfirmation)
     {
         $this->repository = $repository;
+        $this->translator = $translator;
         $this->handlerUserRegistration = $handlerUserRegistration;
         $this->handlerUserConfirmation = $handlerUserConfirmation;
     }
@@ -64,11 +77,13 @@ class UserController extends AbstractController
             $email = $request->request->get('email');
             $password = $request->request->get('password');
             if (!$email || !$password) {
-                throw new \Exception('Data no valid', 422);
+                $message = $this->getNotValidMessage();
+                throw new \Exception($message, self::CODE_NOT_VALID);
             }
 
             if ($this->repository->findByUserEmail($email)) {
-                throw new \Exception('Email yes in data base', 422);
+                $message = $this->getEmailExistsMessage();
+                throw new \Exception($message, self::CODE_NOT_VALID);
             }
 
             $user = new User();
@@ -76,18 +91,12 @@ class UserController extends AbstractController
             $user->setPassword($password);
 
             $this->handlerUserRegistration->handle($user);
-
-            $data = [
-                'status' => 200,
-                'success' => 'User added successfully',
-            ];
+            $message = $this->getUserAddedMessage();
+            $data = $this->getDataSuccessMessage($message);
 
             return $this->response($data);
         } catch (\Exception $e) {
-            $data = [
-                'status' => $e->getCode(),
-                'errors' => $e->getMessage(),
-            ];
+            $data = $this->getDataErrorMessage($e->getCode(), $e->getMessage());
 
             return $this->response($data, $e->getCode());
         }
@@ -99,11 +108,11 @@ class UserController extends AbstractController
      * @return JsonResponse
      * @Route("/user/{id}", name="user_get", methods={"GET"})
      */
-    public function getShow($id)
+    public function show($id)
     {
-        $user = $this->repository->findOneBySomeFieldEmailOrId($id);
+        $user = $this->repository->findOneBySomeFieldId($id);
         if (!$user) {
-            return $this->response($this->getNotFoundMessage(), 404);
+            return $this->responseNotFound();
         }
 
         return $this->response($user);
@@ -120,22 +129,17 @@ class UserController extends AbstractController
         try {
             $user = $this->repository->find($id);
             if (!$user) {
-                return $this->response($this->getNotFoundMessage(), 404);
+                return $this->responseNotFound();
             }
             $this->handlerUserConfirmation->handle($user);
-            $data = [
-                'status' => 200,
-                'errors' => 'User updated successfully',
-            ];
+            $message = $this->getUserUpdatedMessage();
+            $data = $this->getDataSuccessMessage($message);
 
             return $this->response($data);
         } catch (\Exception $e) {
-            $data = [
-                'status' => $e->getCode(),
-                'errors' => $e->getMessage(),
-            ];
+            $data = $this->getDataErrorMessage($e->getCode(), $e->getMessage());
 
-            return $this->response($data, 422);
+            return $this->response($data, $e->getCode());
         }
     }
 
@@ -152,13 +156,12 @@ class UserController extends AbstractController
     {
         $user = $this->repository->find($id);
         if (!$user) {
-            return $this->response($this->getNotFoundMessage(), 404);
+            return $this->responseNotFound();
         }
         $this->repository->remove($user);
-        $data = [
-            'status' => 200,
-            'errors' => 'User deleted successfully',
-        ];
+
+        $message = $this->getUserDeletedMessage();
+        $data = $this->getDataSuccessMessage($message);
 
         return $this->response($data);
     }
@@ -167,13 +170,23 @@ class UserController extends AbstractController
      * Returns a JSON response.
      *
      * @param array $data
-     * @param int   $status
+     * @param int $status
      * @param array $headers
      * @return JsonResponse
      */
-    private function response($data, $status = 200, $headers = []): JsonResponse
+    private function response($data, $status = self::CODE_SUCCESS, $headers = []): JsonResponse
     {
         return new JsonResponse($data, $status, $headers);
+    }
+
+    /**
+     * Returns a JSON response.
+     */
+    private function responseNotFound(): JsonResponse
+    {
+        $data = $this->getDataNotFoundMessage();
+
+        return new JsonResponse($data, self::CODE_NOT_FOUND);
     }
 
     /**
@@ -182,11 +195,7 @@ class UserController extends AbstractController
      */
     private function transformJsonBody(Request $request): Request
     {
-        $json = $request->getContent();
-        $data = null;
-        if (is_string($json)) {
-            $data = json_decode($json, true);
-        }
+        $data = $this->getDataJsonDecode($request);
         if (null === $data) {
             return $request;
         }
@@ -196,15 +205,113 @@ class UserController extends AbstractController
     }
 
     /**
+     * @return mixed|null
+     */
+    private function getDataJsonDecode(Request $request)
+    {
+        $json = $request->getContent();
+        $data = null;
+        if (is_string($json)) {
+            $data = json_decode($json, true);
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param string $message
      * @return array
      */
-    private function getNotFoundMessage()
+    private function getDataSuccessMessage(string $message): array
     {
         $data = [
-            'status' => 404,
-            'errors' => 'User not found',
+            'status' => self::CODE_SUCCESS,
+            'success' => $message,
         ];
 
         return $data;
+    }
+
+    /**
+     * @return array
+     */
+    private function getDataNotFoundMessage(): array
+    {
+        $data = [
+            'status' => self::CODE_NOT_FOUND,
+            'errors' => $this->getNotFoundMessage(),
+        ];
+
+        return $data;
+    }
+
+    /**
+     * @return array
+     */
+    private function getDataErrorMessage(int $code, string $message)
+    {
+        $data = [
+            'status' => $code,
+            'errors' => $message,
+        ];
+
+        return $data;
+    }
+
+    /**
+     * @param string $id
+     * @return string
+     */
+    private function getTranslationTrans($id): string
+    {
+        return $this->translator->trans($id);
+    }
+
+    /**
+     * @return string
+     */
+    public function getNotValidMessage(): string
+    {
+        return $this->getTranslationTrans('User.Api.messages.Data no valid');
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmailExistsMessage(): string
+    {
+        return $this->getTranslationTrans('User.Api.messages.Such e-mail address already exists in the system');
+    }
+
+    /**
+     * @return string
+     */
+    public function getNotFoundMessage(): string
+    {
+        return $this->getTranslationTrans('User.Api.messages.User not found');
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserAddedMessage(): string
+    {
+        return $this->getTranslationTrans('User.Api.messages.User added successfully');
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserUpdatedMessage(): string
+    {
+        return $this->getTranslationTrans('User.Api.messages.User updated successfully');
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserDeletedMessage(): string
+    {
+        return $this->getTranslationTrans('User.Api.messages.User deleted successfully');
     }
 }
