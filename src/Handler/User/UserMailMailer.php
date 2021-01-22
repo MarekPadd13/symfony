@@ -8,33 +8,18 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
-class UserMailMailer
+final class UserMailMailer
 {
-    /**
-     * @var MailerInterface
-     */
-    private $mailer;
+    private MailerInterface $mailer;
+    private MailFactory $mailFactory;
 
-    /**
-     * @var MailFactory
-     */
-    private $mailFactory;
-
-    /**
-     * ConfirmationMailMailer constructor.
-     * @param MailFactory $mailFactory
-     * @param MailerInterface $mailer
-     */
-    public function __construct(MailFactory $mailFactory, MailerInterface $mailer)
+    public function __construct(MailerInterface $mailer, MailFactory $mailFactory)
     {
-        $this->mailFactory = $mailFactory;
         $this->mailer = $mailer;
+        $this->mailFactory = $mailFactory;
     }
 
     /**
-     * @param User $user
-     * @param string $subject
-     * @param string $pathTemplate
      * @throws TransportExceptionInterface
      */
     public function sendTo(User $user, string $subject, string $pathTemplate): void
@@ -43,12 +28,6 @@ class UserMailMailer
         $this->mailer->send($message);
     }
 
-    /**
-     * @param User $user
-     * @param string $subject
-     * @param string $pathTemplate
-     * @return TemplatedEmail
-     */
     private function createMessageFor(User $user, string $subject, string $pathTemplate): TemplatedEmail
     {
         return $this->mailFactory->createMessageFor($user, $subject, $pathTemplate);

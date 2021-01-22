@@ -22,7 +22,6 @@ class MakeController extends AbstractController
      * @Route("/make/view/{id}", name="make_view")
      *
      * @param int $id
-     * @return Response
      */
     public function view($id = 1): Response
     {

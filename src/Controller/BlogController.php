@@ -18,14 +18,12 @@ class BlogController extends AbstractController
     }
 
     /**
-     * @param int $id
      * @Route("/blog/view/{id?1}",
      *      name="blog_view",
      *     methods={"GET","HEAD"},
      *     requirements={"id"="\d+"},
      *    condition="context.getMethod() in ['GET', 'HEAD'] and request.headers.get('User-Agent') matches '/firefox/i'"
      * )
-     * @return Response
      */
     public function view(int $id): Response
     {

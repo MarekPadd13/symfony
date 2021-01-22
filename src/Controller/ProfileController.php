@@ -13,15 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProfileController extends AbstractController
 {
-    /**
-     * @var ProfileRepository
-     */
-    private $repository;
+    private ProfileRepository $repository;
 
-    /**
-     * ProfileController constructor.
-     * @param ProfileRepository $repository
-     */
     public function __construct(ProfileRepository $repository)
     {
         $this->repository = $repository;

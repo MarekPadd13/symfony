@@ -19,164 +19,126 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     *
-     * @var int
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\Email
      *
-     * @var string
+     * @Assert\Email
      */
-    private $email;
+    private string $email;
 
     /**
      * @ORM\Column(type="json")
-     *
-     * @var array
      */
-    private $roles = [];
+    private array $roles = [];
 
     /**
-     * @var string
      * @ORM\Column(type="string")
+     *
      * @Assert\Length(
      *      min = 8,
      *      max = 50,
      * )
      */
-    private $password;
+    private string $password;
 
     /**
-     * @var string
      * @ORM\Column(type="string")
      */
-    private $confirmToken;
+    private string $confirmToken;
 
     /**
-     * @var bool
      * @ORM\Column(type="boolean")
      */
-    private $isEnabled = false;
+    private bool $isEnabled = false;
+
+    /**
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private \DateTimeImmutable $createdAt;
 
     /**
      * @ORM\Column(type="datetime_immutable")
      *
-     * @var \DateTimeImmutable
      */
-    private $createdAt;
-
-    /**
-     * @var \DateTimeImmutable
-     * @ORM\Column(type="datetime_immutable")
-     */
-    private $updatedAt;
+    private \DateTimeImmutable $updatedAt;
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Profile", mappedBy="user")
-     *
-     * @var Profile
      */
-    private $profile;
+    private Profile $profile;
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function preSetCreatedAt(): void
+    {
+        $dateTimeImmutable = new \DateTimeImmutable();
+        $this->setCreatedAt($dateTimeImmutable);
+    }
 
     /**
      * @ORM\PrePersist
      * @ORM\PreUpdate
      */
-    public function preSetDateTime(): void
+    public function preSetUpdatedAt(): void
     {
         $dateTimeImmutable = new \DateTimeImmutable();
-        if (!$this->getCreatedAt()) {
-            $this->setCreatedAt($dateTimeImmutable);
-        }
         $this->setUpdatedAt($dateTimeImmutable);
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    /**
-     * @param string $email
-     */
     public function setEmail(string $email): void
     {
         $this->email = $email;
     }
 
-    /**
-     * @return string
-     */
     public function getConfirmToken(): string
     {
         return $this->confirmToken;
     }
 
-    /**
-     * @param string $confirmToken
-     */
     public function setConfirmToken(string $confirmToken): void
     {
         $this->confirmToken = $confirmToken;
     }
 
-    /**
-     * @return bool
-     */
     public function getIsEnabled(): bool
     {
         return $this->isEnabled;
     }
 
-    /**
-     * @param bool $isEnabled
-     */
     public function setIsEnabled(bool $isEnabled): void
     {
         $this->isEnabled = $isEnabled;
     }
 
-    /**
-     * @return \DateTimeImmutable|null
-     */
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    /**
-     * @param \DateTimeImmutable $dateTimeImmutable
-     */
     public function setCreatedAt(\DateTimeImmutable $dateTimeImmutable): void
     {
         $this->createdAt = $dateTimeImmutable;
     }
 
-    /**
-     * @return \DateTimeImmutable
-     */
     public function getUpdatedTime(): \DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    /**
-     * @param \DateTimeImmutable $dateTimeImmutable
-     */
     public function setUpdatedAt(\DateTimeImmutable $dateTimeImmutable): void
     {
         $this->updatedAt = $dateTimeImmutable;
@@ -200,27 +162,16 @@ class User implements UserInterface
         return $this->roles;
     }
 
-    /**
-     * @param array $roles
-     */
     public function setRoles(array $roles): void
     {
         $this->roles = $roles;
     }
 
-
-    /**
-     * @return string
-     */
     public function getPassword(): string
     {
         return (string) $this->password;
     }
 
-    /**
-     * @param string $password
-     * @return void
-     */
     public function setPassword(string $password): void
     {
         $this->password = $password;

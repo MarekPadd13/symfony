@@ -1,27 +1,16 @@
 <?php
 
-namespace App\Handler\User\Confirmation;
+namespace App\Handler\User;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ConfirmationHandler implements ConfirmationHandlerInterface
+final class ConfirmationHandler
 {
-    /**
-     * @var UserRepository
-     */
-    private $repository;
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
+    private UserRepository $repository;
+    private TranslatorInterface $translator;
 
-    /**
-     * ConfirmationHandler constructor.
-     * @param UserRepository $repository
-     * @param TranslatorInterface $translator
-     */
     public function __construct(UserRepository $repository, TranslatorInterface $translator)
     {
         $this->repository = $repository;
@@ -29,7 +18,6 @@ class ConfirmationHandler implements ConfirmationHandlerInterface
     }
 
     /**
-     * @param User $user
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
@@ -43,17 +31,11 @@ class ConfirmationHandler implements ConfirmationHandlerInterface
         $this->repository->save($user);
     }
 
-    /**
-     * @return string
-     */
     public function getErrorMessage(): string
     {
         return $this->translator->trans('Your status is active');
     }
 
-    /**
-     * @return string
-     */
     public function getSuccessMessage(): string
     {
         return $this->translator->trans('Your email is confirmed');

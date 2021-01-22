@@ -3,8 +3,8 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
-use App\Handler\User\Confirmation\ConfirmationHandlerInterface;
-use App\Handler\User\Registration\RegistrationHandlerInterface;
+use App\Handler\User\ConfirmationHandler;
+use App\Handler\User\RegistrationHandler;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,45 +19,31 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class UserController extends AbstractController
 {
-    const CODE_NOT_VALID = 422;
-    const CODE_SUCCESS = 200;
-    const CODE_NOT_FOUND = 404;
-    /**
-     * @var UserRepository
-     */
-    private $repository;
+    private const CODE_NOT_VALID = 422;
+    private const CODE_SUCCESS = 200;
+    private const CODE_NOT_FOUND = 404;
 
-    /**
-     * @var RegistrationHandlerInterface
-     */
-    private $handlerUserRegistration;
+    private UserRepository $repository;
+    private RegistrationHandler $registrationHandler;
+    private ConfirmationHandler $confirmationHandler;
+    private TranslatorInterface $translator;
 
-    /**
-     * @var ConfirmationHandlerInterface
-     */
-    private $handlerUserConfirmation;
-
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
-
-    public function __construct(UserRepository $repository,
-                                TranslatorInterface $translator,
-                                RegistrationHandlerInterface $handlerUserRegistration,
-                                ConfirmationHandlerInterface $handlerUserConfirmation)
-    {
+    public function __construct(
+        UserRepository $repository,
+        RegistrationHandler $registrationHandler,
+        ConfirmationHandler $confirmationHandler,
+        TranslatorInterface $translator
+    ) {
         $this->repository = $repository;
+        $this->registrationHandler = $registrationHandler;
+        $this->confirmationHandler = $confirmationHandler;
         $this->translator = $translator;
-        $this->handlerUserRegistration = $handlerUserRegistration;
-        $this->handlerUserConfirmation = $handlerUserConfirmation;
     }
 
     /**
-     * @return JsonResponse
      * @Route("/users", name="users", methods={"GET"})
      */
-    public function getUsers()
+    public function getUsers(): JsonResponse
     {
         $data = $this->repository->findBySelectEmailAndIsEnabled();
 
@@ -65,17 +51,20 @@ class UserController extends AbstractController
     }
 
     /**
-     * @return JsonResponse
+     * @Route("/add", name="user_add", methods={"POST"})
      *
      * @throws \Exception
-     * @Route("/add", name="user_add", methods={"POST"})
+     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
      */
-    public function addUser(Request $request)
+    public function addUser(Request $request): JsonResponse
     {
         try {
-            $request = $this->transformJsonBody($request);
-            $email = $request->request->get('email');
-            $password = $request->request->get('password');
+            $data= $this->getDataJsonDecode($request);
+            if (!$data) {
+                throw new \Exception('Error', 500);
+            }
+            $email = $data['email'];
+            $password = $data['password'];
             if (!$email || !$password) {
                 $message = $this->getNotValidMessage();
                 throw new \Exception($message, self::CODE_NOT_VALID);
@@ -90,7 +79,7 @@ class UserController extends AbstractController
             $user->setEmail($email);
             $user->setPassword($password);
 
-            $this->handlerUserRegistration->handle($user);
+            $this->registrationHandler->handle($user);
             $message = $this->getUserAddedMessage();
             $data = $this->getDataSuccessMessage($message);
 
@@ -103,14 +92,11 @@ class UserController extends AbstractController
     }
 
     /**
-     * @param int $id
-     *
-     * @return JsonResponse
      * @Route("/user/{id}", name="user_get", methods={"GET"})
      */
-    public function show($id)
+    public function show(int $id): JsonResponse
     {
-        $user = $this->repository->findOneBySomeFieldId($id);
+        $user = $this->repository->findOneById($id);
         if (!$user) {
             return $this->responseNotFound();
         }
@@ -119,19 +105,16 @@ class UserController extends AbstractController
     }
 
     /**
-     * @param int $id
-     *
-     * @return JsonResponse
      * @Route("/confirm/{id}", name="user_confirm", methods={"PUT"})
      */
-    public function confirm($id)
+    public function confirm(int $id): JsonResponse
     {
         try {
             $user = $this->repository->find($id);
             if (!$user) {
                 return $this->responseNotFound();
             }
-            $this->handlerUserConfirmation->handle($user);
+            $this->confirmationHandler->handle($user);
             $message = $this->getUserUpdatedMessage();
             $data = $this->getDataSuccessMessage($message);
 
@@ -144,15 +127,12 @@ class UserController extends AbstractController
     }
 
     /**
-     * @param int $id
-     *
-     * @return JsonResponse
+     * @Route("/delete/{id}", name="user_delete", methods={"DELETE"})
      *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @Route("/delete/{id}", name="user_delete", methods={"DELETE"})
      */
-    public function delete($id)
+    public function delete(int $id): JsonResponse
     {
         $user = $this->repository->find($id);
         if (!$user) {
@@ -166,22 +146,11 @@ class UserController extends AbstractController
         return $this->response($data);
     }
 
-    /**
-     * Returns a JSON response.
-     *
-     * @param array $data
-     * @param int $status
-     * @param array $headers
-     * @return JsonResponse
-     */
-    private function response($data, $status = self::CODE_SUCCESS, $headers = []): JsonResponse
+    private function response(array $data, int $status = self::CODE_SUCCESS, array $headers = []): JsonResponse
     {
         return new JsonResponse($data, $status, $headers);
     }
 
-    /**
-     * Returns a JSON response.
-     */
     private function responseNotFound(): JsonResponse
     {
         $data = $this->getDataNotFoundMessage();
@@ -189,39 +158,17 @@ class UserController extends AbstractController
         return new JsonResponse($data, self::CODE_NOT_FOUND);
     }
 
-    /**
-     * @param Request $request
-     * @return Request
-     */
-    private function transformJsonBody(Request $request): Request
+    private function getDataJsonDecode(Request $request): ?array
     {
-        $data = $this->getDataJsonDecode($request);
-        if (null === $data) {
-            return $request;
-        }
-        $request->request->replace($data);
-
-        return $request;
-    }
-
-    /**
-     * @return mixed|null
-     */
-    private function getDataJsonDecode(Request $request)
-    {
-        $json = $request->getContent();
+        $body = $request->getContent();
         $data = null;
-        if (is_string($json)) {
-            $data = json_decode($json, true);
+        if (is_string($body)) {
+            $data = json_decode($body, true);
         }
 
         return $data;
     }
 
-    /**
-     * @param string $message
-     * @return array
-     */
     private function getDataSuccessMessage(string $message): array
     {
         $data = [
@@ -232,9 +179,6 @@ class UserController extends AbstractController
         return $data;
     }
 
-    /**
-     * @return array
-     */
     private function getDataNotFoundMessage(): array
     {
         $data = [
@@ -245,10 +189,7 @@ class UserController extends AbstractController
         return $data;
     }
 
-    /**
-     * @return array
-     */
-    private function getDataErrorMessage(int $code, string $message)
+    private function getDataErrorMessage(int $code, string $message): array
     {
         $data = [
             'status' => $code,
@@ -258,58 +199,36 @@ class UserController extends AbstractController
         return $data;
     }
 
-    /**
-     * @param string $id
-     * @return string
-     */
-    private function getTranslationTrans($id): string
+    private function getTranslationTrans(string $id): string
     {
         return $this->translator->trans($id);
     }
 
-    /**
-     * @return string
-     */
     public function getNotValidMessage(): string
     {
         return $this->getTranslationTrans('User.Api.messages.Data no valid');
     }
 
-    /**
-     * @return string
-     */
     public function getEmailExistsMessage(): string
     {
         return $this->getTranslationTrans('User.Api.messages.Such e-mail address already exists in the system');
     }
 
-    /**
-     * @return string
-     */
     public function getNotFoundMessage(): string
     {
         return $this->getTranslationTrans('User.Api.messages.User not found');
     }
 
-    /**
-     * @return string
-     */
     public function getUserAddedMessage(): string
     {
         return $this->getTranslationTrans('User.Api.messages.User added successfully');
     }
 
-    /**
-     * @return string
-     */
     public function getUserUpdatedMessage(): string
     {
         return $this->getTranslationTrans('User.Api.messages.User updated successfully');
     }
 
-    /**
-     * @return string
-     */
     public function getUserDeletedMessage(): string
     {
         return $this->getTranslationTrans('User.Api.messages.User deleted successfully');

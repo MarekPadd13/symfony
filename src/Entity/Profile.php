@@ -13,63 +13,55 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Profile
 {
     /**
-     * @var int
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
-     * @var string
      * @ORM\Column(type="string", length=180, name="last_name")
+     *
      * @Assert\NotBlank()
      */
-    private $lastName;
+    private string $lastName;
 
     /**
-     * @var string
      * @ORM\Column(type="string", length=180, name="first_name")
-     * *@Assert\NotBlank()
+     *
+     * @Assert\NotBlank()
      */
-    private $firstName;
+    private string $firstName;
 
     /**
-     * @var string
      * @ORM\Column(type="string", length=180)
      */
-    private $patronymic = '';
+    private string $patronymic = '';
 
     /**
-     * @var string
-     * @Assert\NotBlank()
      * @ORM\Column(type="string", length=15)
-     */
-    private $phone;
-
-    /**
-     * @var int
+     *
      * @Assert\NotBlank()
-     * @ORM\Column(type="integer", length=1)
      */
-    private $sex;
+    private string $phone;
 
     /**
-     * @var User
+     * @ORM\Column(type="integer", length=1)
+     *
+     * @Assert\NotBlank()
+     */
+    private int $sex;
+
+    /**
      * @ORM\OneToOne(targetEntity="App\Entity\User", inversedBy="user")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
-    private $user;
+    private User $user;
 
-    /**
-     * Profile constructor.
-     * @param User $user
-     */
     public function __construct(User $user)
     {
         $this->user = $user;
     }
-
     /**
      * @ORM\PrePersist
      * @ORM\PreUpdate
@@ -79,93 +71,57 @@ class Profile
         $this->setUser($this->user);
     }
 
-    /**
-     * @return User
-     */
     public function getUser(): User
     {
         return $this->user;
     }
 
-    /**
-     * @param User $user
-     * @return $this
-     */
-    public function setUser(User $user): self
+    public function setUser(User $user): void
     {
         $this->user = $user;
-
-        return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
     public function getLastName(): string
     {
         return $this->lastName;
     }
 
-    /**
-     * @param string $lastName
-     */
-    public function setLastName($lastName): void
+    public function setLastName(string $lastName): void
     {
         $this->lastName = $lastName;
     }
 
-    /**
-     * @return string
-     */
     public function getFirstName(): string
     {
         return $this->firstName;
     }
 
-    /**
-     * @param string $firstName
-     */
-    public function setFirstName($firstName): void
+    public function setFirstName(string $firstName): void
     {
         $this->firstName = $firstName;
     }
 
-    /**
-     * @return string
-     */
     public function getPatronymic(): string
     {
         return $this->patronymic;
     }
 
-    /**
-     * @param string $patronymic
-     */
-    public function setPatronymic($patronymic): void
+    public function setPatronymic(string $patronymic): void
     {
         $this->patronymic = $patronymic;
     }
 
-    /**
-     * @return int
-     */
     public function getSex(): int
     {
         return $this->sex;
     }
 
-    /**
-     * @param int $sex
-     */
-    public function setSex($sex): void
+    public function setSex(int $sex): void
     {
         $this->sex = $sex;
     }
@@ -175,10 +131,7 @@ class Profile
         return $this->phone;
     }
 
-    /**
-     * @param string $phone
-     */
-    public function setPhone($phone): void
+    public function setPhone(string $phone): void
     {
         $this->phone = $phone;
     }

@@ -6,7 +6,6 @@ use App\Entity\Profile;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @method Profile|null find($id, $lockMode = null, $lockVersion = null)
@@ -50,17 +49,12 @@ class ProfileRepository extends ServiceEntityRepository
     }
     */
 
-    /**
-     * @param User $user
-     * @return Profile|null
-     */
     public function findOneByUser(User $user): ?Profile
     {
         return $this->findOneBy(['user' => $user]);
     }
 
     /**
-     * @param Profile $profile
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */

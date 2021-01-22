@@ -6,52 +6,43 @@ use App\Entity\User;
 use App\Form\EmailUserType;
 use App\Form\RegisterType;
 use App\Form\ResetPasswordType;
-use App\Handler\User\Confirmation\ConfirmationHandlerInterface;
-use App\Handler\User\NewPassword\NewPasswordHandlerInterface;
-use App\Handler\User\Registration\RegistrationHandlerInterface;
-use App\Handler\User\Reset\ResetHandlerInterface;
+use App\Handler\User\ConfirmationHandler;
+use App\Handler\User\NewPasswordHandler;
+use App\Handler\User\RegistrationHandler;
+use App\Handler\User\ResetPasswordHandler;
+use Doctrine\ORM\ORMException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
 {
-    /**
-     * @var RegistrationHandlerInterface
-     */
-    private $handlerUserRegistration;
+    private RegistrationHandler $registrationHandler;
+    private ConfirmationHandler $confirmationHandler;
+    private ResetPasswordHandler $resetPasswordHandler;
+    private NewPasswordHandler $newPasswordHandler;
 
-    /**
-     * @var ConfirmationHandlerInterface
-     */
-    private $handlerUserConfirmation;
-
-    /**
-     * @var ResetHandlerInterface
-     */
-    private $handlerUserReset;
-
-    /**
-     * @var NewPasswordHandlerInterface
-     */
-    private $handlerUserNewPassword;
-
-    /**
-     * UserController constructor.
-     */
-    public function __construct(ConfirmationHandlerInterface $handlerUserConfirmation,
-                                RegistrationHandlerInterface $handlerUserRegistration,
-                                ResetHandlerInterface $handlerUserReset, NewPasswordHandlerInterface $handlerUserNewPassword
+    public function __construct(
+        RegistrationHandler $registrationHandler,
+        ConfirmationHandler $confirmationHandler,
+        ResetPasswordHandler $resetPasswordHandler,
+        NewPasswordHandler $newPasswordHandler
     ) {
-        $this->handlerUserRegistration = $handlerUserRegistration;
-        $this->handlerUserConfirmation = $handlerUserConfirmation;
-        $this->handlerUserReset = $handlerUserReset;
-        $this->handlerUserNewPassword = $handlerUserNewPassword;
+        $this->registrationHandler = $registrationHandler;
+        $this->confirmationHandler = $confirmationHandler;
+        $this->resetPasswordHandler= $resetPasswordHandler;
+        $this->newPasswordHandler = $newPasswordHandler;
     }
 
     /**
      * @Route("/registration", name="registration", methods={"GET","POST"})
+     *
+     * @throws ORMException
+     * @throws TransportExceptionInterface
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function registration(Request $request): Response
     {
@@ -60,8 +51,9 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->handlerUserRegistration->handle($user);
-            $this->addFlash('notice', $this->handlerUserRegistration->getSuccessMessage());
+            $handler = $this->registrationHandler;
+            $handler->handle($user);
+            $this->addFlash('notice', $handler->getSuccessMessage());
 
             return $this->redirectToRoute('app_login');
         }
@@ -78,8 +70,9 @@ class UserController extends AbstractController
     public function confirm(User $user): Response
     {
         try {
-            $this->handlerUserConfirmation->handle($user);
-            $this->addFlash('success', $this->handlerUserConfirmation->getSuccessMessage());
+            $handler = $this->confirmationHandler;
+            $handler->handle($user);
+            $this->addFlash('success', $handler->getSuccessMessage());
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
         }
@@ -90,7 +83,7 @@ class UserController extends AbstractController
     /**
      * @Route("/reset", name="reset", methods={"GET","POST"})
      *
-     * @throws \Exception
+     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
      */
     public function reset(Request $request): Response
     {
@@ -102,8 +95,9 @@ class UserController extends AbstractController
             $user = new User();
             $user->setEmail($result['email']);
             try {
-                $this->handlerUserReset->handle($user);
-                $this->addFlash('success', $this->handlerUserReset->getSuccessMessage());
+                $handler = $this->resetPasswordHandler;
+                $handler->handle($user);
+                $this->addFlash('success', $handler->getSuccessMessage());
 
                 return $this->redirectToRoute('app_login');
             } catch (\Exception $e) {
@@ -118,14 +112,18 @@ class UserController extends AbstractController
 
     /**
      * @Route("/add-new-password/{confirmToken}", name="add_new_password", methods={"GET","POST"})
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function addNewPassword(Request $request, User $user): Response
     {
         $form = $this->createForm(ResetPasswordType::class, $user);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->handlerUserNewPassword->handle($user);
-            $this->addFlash('success', $this->handlerUserNewPassword->getSuccessMessage());
+            $handler = $this->newPasswordHandler;
+            $handler->handle($user);
+            $this->addFlash('success', $handler->getSuccessMessage());
 
             return $this->redirectToRoute('app_login');
         }
