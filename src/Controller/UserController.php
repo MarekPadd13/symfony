@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserController extends AbstractController
 {
@@ -23,17 +24,20 @@ class UserController extends AbstractController
     private ConfirmationHandler $confirmationHandler;
     private ResetPasswordHandler $resetPasswordHandler;
     private NewPasswordHandler $newPasswordHandler;
+    private TranslatorInterface $translator;
 
     public function __construct(
         RegistrationHandler $registrationHandler,
         ConfirmationHandler $confirmationHandler,
         ResetPasswordHandler $resetPasswordHandler,
-        NewPasswordHandler $newPasswordHandler
+        NewPasswordHandler $newPasswordHandler,
+        TranslatorInterface $translator
     ) {
         $this->registrationHandler = $registrationHandler;
         $this->confirmationHandler = $confirmationHandler;
         $this->resetPasswordHandler= $resetPasswordHandler;
         $this->newPasswordHandler = $newPasswordHandler;
+        $this->translator = $translator;
     }
 
     /**
@@ -53,7 +57,7 @@ class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $handler = $this->registrationHandler;
             $handler->handle($user);
-            $this->addFlash('notice', $handler->getSuccessMessage());
+            $this->addFlash('notice', $this->getNoticeAddedUserMessage());
 
             return $this->redirectToRoute('app_login');
         }
@@ -72,7 +76,7 @@ class UserController extends AbstractController
         try {
             $handler = $this->confirmationHandler;
             $handler->handle($user);
-            $this->addFlash('success', $handler->getSuccessMessage());
+            $this->addFlash('success', $this->getSuccessConfirmationMessage());
         } catch (\Exception $e) {
             $this->addFlash('error', $e->getMessage());
         }
@@ -97,7 +101,7 @@ class UserController extends AbstractController
             try {
                 $handler = $this->resetPasswordHandler;
                 $handler->handle($user);
-                $this->addFlash('success', $handler->getSuccessMessage());
+                $this->addFlash('success', $this->getSuccessResetPasswordMessage());
 
                 return $this->redirectToRoute('app_login');
             } catch (\Exception $e) {
@@ -123,7 +127,7 @@ class UserController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $handler = $this->newPasswordHandler;
             $handler->handle($user);
-            $this->addFlash('success', $handler->getSuccessMessage());
+            $this->addFlash('success', $this->getSuccessNewPasswordMessage());
 
             return $this->redirectToRoute('app_login');
         }
@@ -131,5 +135,25 @@ class UserController extends AbstractController
         return $this->render('user/new_password.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    private function getNoticeAddedUserMessage(): string
+    {
+        return $this->translator->trans('Confirm your email');
+    }
+
+    private function getSuccessConfirmationMessage(): string
+    {
+        return $this->translator->trans('Your email is confirmed');
+    }
+
+    private function getSuccessResetPasswordMessage(): string
+    {
+        return $this->translator->trans('Your password reset email has been sent');
+    }
+
+    private function getSuccessNewPasswordMessage(): string
+    {
+        return $this->translator->trans('Your password success upgraded');
     }
 }

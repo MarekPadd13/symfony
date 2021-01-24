@@ -2,6 +2,7 @@ parameters:
 	ignoreErrors:
 	    - '#Method App\\Entity\\User::getSalt\(\)should return string|null but return statement is missing.#'
 	    - '#Method App\\Entity\\User::eraseCredentials\(\) has no return typehint specified.#'
+	    - '#Call to an undefined method Symfony\\Component\\Form\\FormError|Symfony\\Component\\Form\\FormErrorIterator::getMessage\(\).#'
 	level: max
 	checkMissingIterableValueType: false
 	paths:

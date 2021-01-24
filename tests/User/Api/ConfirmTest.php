@@ -2,103 +2,42 @@
 
 namespace App\Tests\User\Api;
 
-use App\Controller\Api\UserController;
-use App\Handler\User\Confirmation\ConfirmationHandlerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class ConfirmTest extends WebTestCase
 {
-    const CODE_SUCCESS = 200;
-    const CODE_NOTFOUND = 404;
-    const CODE_NOT_VALID = 422;
+    private const CODE_SUCCESS = 200;
+    private const CODE_NOTFOUND = 404;
+    private const CODE_CONFLICT = 409;
 
     public function testNotFound()
     {
         $client = $this->up();
-        $client->request('PUT', '/api/confirm/5');
+        $client->request('PUT', '/api/user/confirm/1554');
 
         $this->assertEquals(self::CODE_NOTFOUND, $client->getResponse()->getStatusCode());
-
-        $data = $this->decodeResponseContent($client->getResponse()->getContent());
-        if ($data) {
-            $this->assertEquals(self::CODE_NOTFOUND, $data['status']);
-            $this->assertEquals($this->getNotFoundMessage(), $data['errors']);
-        }
     }
 
     public function testSuccess()
     {
         $client = $this->up();
-        $client->request('PUT', '/api/confirm/4');
+        $client->request('PUT', '/api/user/confirm/10');
 
         $this->assertResponseIsSuccessful();
         $this->assertEquals(self::CODE_SUCCESS, $client->getResponse()->getStatusCode());
-
-        $data = $this->decodeResponseContent($client->getResponse()->getContent());
-        if ($data) {
-            $this->assertEquals(self::CODE_SUCCESS, $data['status']);
-            $this->assertEquals($this->getUserUpdatedMessage(), $data['success']);
-        }
     }
 
     public function testIsActive()
     {
         $client = $this->up();
-        $client->request('PUT', '/api/confirm/4');
+        $client->request('PUT', '/api/user/confirm/9');
 
-        $this->assertEquals(self::CODE_NOT_VALID, $client->getResponse()->getStatusCode());
-
-        $data = $this->decodeResponseContent($client->getResponse()->getContent());
-        if ($data) {
-            $this->assertEquals(self::CODE_NOT_VALID, $data['status']);
-            $this->assertEquals($this->getErrorMessage(), $data['errors']);
-        }
+        $this->assertEquals(self::CODE_CONFLICT, $client->getResponse()->getStatusCode());
     }
 
-    /**
-     * @return \Symfony\Bundle\FrameworkBundle\KernelBrowser
-     */
-    private function up()
+    private function up(): KernelBrowser
     {
         return static::createClient();
-    }
-
-    /**
-     * @param $content
-     *
-     * @return mixed|null
-     */
-    private function decodeResponseContent($content)
-    {
-        $data = null;
-        if ($content) {
-            $data = json_decode($content, true);
-        }
-
-        return $data;
-    }
-
-    /**
-     * @return string
-     */
-    private function getNotFoundMessage()
-    {
-        return self::$container->get(UserController::class)->getNotFoundMessage();
-    }
-
-    /**
-     * @return string
-     */
-    private function getUserUpdatedMessage()
-    {
-        return self::$container->get(UserController::class)->getUserUpdatedMessage();
-    }
-
-    /**
-     * @return string
-     */
-    private function getErrorMessage()
-    {
-        return self::$container->get(ConfirmationHandlerInterface::class)->getErrorMessage();
     }
 }

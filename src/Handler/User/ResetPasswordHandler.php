@@ -13,7 +13,7 @@ final class ResetPasswordHandler
 {
     private const PATH_TEMPLATE_MAIL = 'reset';
     private const SUBJECT_MAIL = 'RESET';
-    private const CODE_ERROR  = 1;
+    private const CODE_CONFLICT  = 409;
 
     private UserRepository $repository;
     private TokenGeneratorInterface $tokenGenerator;
@@ -42,7 +42,7 @@ final class ResetPasswordHandler
     {
         $userOne = $this->repository->findByUserEmail($user->getEmail());
         if (!$userOne) {
-            throw new \Exception($this->getErrorMessage(), self::CODE_ERROR);
+            throw new \Exception($this->getErrorMessage(), self::CODE_CONFLICT);
         }
         $userOne->setConfirmToken($this->tokenGenerator->generate());
         $this->repository->save($userOne);
@@ -52,10 +52,5 @@ final class ResetPasswordHandler
     public function getErrorMessage(): string
     {
         return $this->translator->trans('Security.Error.email');
-    }
-
-    public function getSuccessMessage(): string
-    {
-        return $this->translator->trans('Your password reset email has been sent');
     }
 }

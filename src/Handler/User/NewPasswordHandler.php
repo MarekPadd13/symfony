@@ -11,16 +11,13 @@ final class NewPasswordHandler
 {
     private PasswordEncoder $passwordEncoder;
     private UserRepository $repository;
-    private TranslatorInterface $translator;
 
     public function __construct(
         PasswordEncoder $passwordEncoder,
-        UserRepository $repository,
-        TranslatorInterface $translator
+        UserRepository $repository
     ) {
         $this->passwordEncoder = $passwordEncoder;
         $this->repository = $repository;
-        $this->translator = $translator;
     }
 
     /**
@@ -32,10 +29,5 @@ final class NewPasswordHandler
     {
         $this->passwordEncoder->encode($user);
         $this->repository->save($user);
-    }
-
-    public function getSuccessMessage(): string
-    {
-        return $this->translator->trans('Your password success upgraded');
     }
 }

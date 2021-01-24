@@ -5,7 +5,7 @@ namespace App\Factory\User\Mail;
 use App\Entity\User;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
-class MailFactory
+final class MailFactory
 {
     private string $adminEmail;
 

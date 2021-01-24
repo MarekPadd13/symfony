@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -26,6 +27,7 @@ class User implements UserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      *
      * @Assert\Email
+     * @Assert\NotBlank
      */
     private string $email;
 
@@ -41,6 +43,7 @@ class User implements UserInterface
      *      min = 8,
      *      max = 50,
      * )
+     * @Assert\NotBlank
      */
     private string $password;
 
@@ -68,7 +71,7 @@ class User implements UserInterface
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Profile", mappedBy="user")
      */
-    private Profile $profile;
+    private ?Profile $profile;
 
     /**
      * @ORM\PrePersist
@@ -175,6 +178,11 @@ class User implements UserInterface
     public function setPassword(string $password): void
     {
         $this->password = $password;
+    }
+
+    public function getProfile(): ?Profile
+    {
+        return $this->profile;
     }
 
     /**

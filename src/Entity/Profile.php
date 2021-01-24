@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ProfileRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -53,7 +54,7 @@ class Profile
     private int $sex;
 
     /**
-     * @ORM\OneToOne(targetEntity="App\Entity\User", inversedBy="user")
+     * @ORM\OneToOne(targetEntity="App\Entity\User", inversedBy="profile")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private User $user;
@@ -69,16 +70,6 @@ class Profile
     public function preSetUser(): void
     {
         $this->setUser($this->user);
-    }
-
-    public function getUser(): User
-    {
-        return $this->user;
-    }
-
-    public function setUser(User $user): void
-    {
-        $this->user = $user;
     }
 
     public function getId(): int
@@ -134,5 +125,15 @@ class Profile
     public function setPhone(string $phone): void
     {
         $this->phone = $phone;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): void
+    {
+        $this->user = $user;
     }
 }

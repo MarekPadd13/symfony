@@ -5,12 +5,13 @@ namespace App\Tests\User;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\LoginFormAuthenticator;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LoginTest extends WebTestCase
 {
-    const LOGIN = 'markpdd13@list.ru';
+    private const LOGIN = 'markpdd13@list.ru';
 
     public function testSomething()
     {
@@ -29,7 +30,8 @@ class LoginTest extends WebTestCase
             'email' => self::LOGIN,
             'password' => '4r34345ye5yt4e55',
         ];
-        $client->submitForm($this->getTranslatorTrans('Security.Sign in'), $data);
+        $translator = $this->getTranslator();
+        $client->submitForm($translator->trans('Security.Sign in'), $data);
         $this->assertEquals(302, $client->getResponse()->getStatusCode());
     }
 
@@ -41,9 +43,10 @@ class LoginTest extends WebTestCase
             'email' => self::LOGIN,
             'password' => '4r34345ye5yt4e55',
         ];
-        $client->submitForm($this->getTranslatorTrans('Security.Sign in'), $data);
+        $translator = $this->getTranslator();
+        $client->submitForm($translator->trans('Security.Sign in'), $data);
         $client->followRedirect();
-        $this->assertSelectorExists('div:contains("'.$this->getMessageErrorStatus().'")');
+        $this->assertSelectorExists('div:contains("' . $this->getMessageErrorStatus() . '")');
     }
 
     public function testLoginSubmissionAndGetErrorEmail()
@@ -54,65 +57,49 @@ class LoginTest extends WebTestCase
             'email' => 'sarr@kjj.com',
             'password' => '4r34345ye5yt4e55',
         ];
-        $client->submitForm($this->getTranslatorTrans('Security.Sign in'), $data);
+        $translator = $this->getTranslator();
+        $client->submitForm($translator->trans('Security.Sign in'), $data);
         $client->followRedirect();
-        $this->assertSelectorExists('div:contains("'.$this->getMessageErrorEmail().'")');
+        $this->assertSelectorExists('div:contains("' . $this->getMessageErrorEmail() . '")');
     }
 
     public function testVisitingWhileLoggedIn()
     {
         $client = $this->up();
-
         // retrieve the test user
         $testUser = $this->getUser();
-
         // simulate $testUser being logged in
         $client->loginUser($testUser);
-
+        $translator = $this->getTranslator();
         // test e.g. the profile page
         $client->request('GET', '/profile');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h1', $this->getTranslatorTrans('Profile.Title'));
+        $this->assertSelectorTextContains('h1', $translator->trans('Profile.Title'));
     }
 
-    /**
-     * @return \Symfony\Bundle\FrameworkBundle\KernelBrowser
-     */
-    private function up()
+    private function up(): KernelBrowser
     {
         return static::createClient();
     }
 
-    /**
-     * @param $id
-     *
-     * @return string
-     */
-    private function getTranslatorTrans($id)
+    private function getTranslator(): TranslatorInterface
     {
-        return self::$container->get(TranslatorInterface::class)->trans($id);
+        return self::$container->get(TranslatorInterface::class);
     }
 
-    /**
-     * @return string
-     */
-    private function getMessageErrorEmail()
+    private function getMessageErrorEmail(): string
     {
-        return self::$container->get(LoginFormAuthenticator::class)->getMessageErrorEmail();
+        $translator = $this->getTranslator();
+        return $translator->trans('Security.Error.email');
     }
 
-    /**
-     * @return string
-     */
-    private function getMessageErrorStatus()
+    private function getMessageErrorStatus(): string
     {
-        return self::$container->get(LoginFormAuthenticator::class)->getMessageErrorStatus();
+        $translator = $this->getTranslator();
+        return $translator->trans('Security.Error.status');
     }
 
-    /**
-     * @return User
-     */
-    private function getUser()
+    private function getUser(): User
     {
         $userRepository = static::$container->get(UserRepository::class);
 

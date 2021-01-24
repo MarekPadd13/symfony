@@ -21,7 +21,7 @@ use Symfony\Component\Security\Guard\PasswordAuthenticatedInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements PasswordAuthenticatedInterface
+final class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements PasswordAuthenticatedInterface
 {
     use TargetPathTrait;
 
@@ -68,10 +68,6 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         return $credentials;
     }
 
-    /**
-     * @param mixed $credentials
-     * @return User|null
-     */
     public function getUser($credentials, UserProviderInterface $userProvider): ?User
     {
         $token = new CsrfToken('authenticate', $credentials['csrf_token']);
@@ -88,36 +84,23 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
 
         if (!$user->getIsEnabled()) {
             // fail authentication with a custom error
-            throw new CustomUserMessageAuthenticationException($this->getMessageErrorEmail());
+            throw new CustomUserMessageAuthenticationException($this->getMessageErrorStatus());
         }
 
         return $user;
     }
 
-    /**
-     * @param mixed $credentials
-     * @return bool
-     */
     public function checkCredentials($credentials, UserInterface $user): bool
     {
         return $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
     }
 
-    /**
-     * Used to upgrade (rehash) the user's password automatically over time.
-     *
-     * @param array $credentials
-     * @return string|null
-     */
     public function getPassword($credentials): ?string
     {
         return $credentials['password'];
     }
 
-    /**
-     * @return RedirectResponse|\Symfony\Component\HttpFoundation\Response|null
-     */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey): ?RedirectResponse
     {
         if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
             return new RedirectResponse($targetPath);
@@ -131,12 +114,12 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator implements P
         return $this->urlGenerator->generate(self::LOGIN_ROUTE);
     }
 
-    public function getMessageErrorEmail(): string
+    private function getMessageErrorEmail(): string
     {
         return $this->translator->trans('Security.Error.email');
     }
 
-    public function getMessageErrorStatus(): string
+    private function getMessageErrorStatus(): string
     {
         return $this->translator->trans('Security.Error.status');
     }

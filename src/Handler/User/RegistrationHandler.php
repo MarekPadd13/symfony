@@ -19,20 +19,17 @@ final class RegistrationHandler
     private PasswordEncoder $passwordEncoder;
     private UserRepository $repository;
     private UserMailMailer $userMailMailer;
-    private TranslatorInterface $translator;
 
     public function __construct(
         TokenGeneratorInterface $tokenGenerator,
         PasswordEncoder $passwordEncoder,
         UserRepository $repository,
-        UserMailMailer $userMailMailer,
-        TranslatorInterface $translator
+        UserMailMailer $userMailMailer
     ) {
         $this->tokenGenerator = $tokenGenerator;
         $this->passwordEncoder = $passwordEncoder;
         $this->repository = $repository;
         $this->userMailMailer = $userMailMailer;
-        $this->translator = $translator;
     }
 
     /**
@@ -45,12 +42,7 @@ final class RegistrationHandler
     {
         $user->setConfirmToken($this->tokenGenerator->generate());
         $this->passwordEncoder->encode($user);
-        $this->repository->save($user, true);
+        $this->repository->save($user);
         $this->userMailMailer->sendTo($user, self::SUBJECT_MAIL, self::PATH_TEMPLATE_MAIL);
-    }
-
-    public function getSuccessMessage(): string
-    {
-        return $this->translator->trans('Confirm your email');
     }
 }

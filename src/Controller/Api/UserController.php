@@ -3,13 +3,19 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Form\RegisterType;
 use App\Handler\User\ConfirmationHandler;
 use App\Handler\User\RegistrationHandler;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -19,8 +25,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class UserController extends AbstractController
 {
-    private const CODE_NOT_VALID = 422;
     private const CODE_SUCCESS = 200;
+    private const CODE_NOT_CONTENT = 204;
+    private const CODE_NOT_VALID = 424;
     private const CODE_NOT_FOUND = 404;
 
     private UserRepository $repository;
@@ -42,16 +49,18 @@ class UserController extends AbstractController
 
     /**
      * @Route("/users", name="users", methods={"GET"})
+     * @throws ExceptionInterface
      */
     public function getUsers(): JsonResponse
     {
-        $data = $this->repository->findBySelectEmailAndIsEnabled();
+        $query = $this->repository->findAll();
 
+        $data = $this->getSerialisedNormaliseData($query, [AbstractNormalizer::ATTRIBUTES => ['id','email','isEnabled']]);
         return $this->response($data);
     }
 
     /**
-     * @Route("/add", name="user_add", methods={"POST"})
+     * @Route("/user/add", name="user_add", methods={"POST"})
      *
      * @throws \Exception
      * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
@@ -59,26 +68,16 @@ class UserController extends AbstractController
     public function addUser(Request $request): JsonResponse
     {
         try {
-            $data= $this->getDataJsonDecode($request);
+            $data = $this->getJsonDecodeData($request);
             if (!$data) {
-                throw new \Exception('Error', 500);
+                throw new \Exception($this->translator->trans('Not data'), self::CODE_NOT_CONTENT);
             }
-            $email = $data['email'];
-            $password = $data['password'];
-            if (!$email || !$password) {
-                $message = $this->getNotValidMessage();
-                throw new \Exception($message, self::CODE_NOT_VALID);
-            }
-
-            if ($this->repository->findByUserEmail($email)) {
-                $message = $this->getEmailExistsMessage();
-                throw new \Exception($message, self::CODE_NOT_VALID);
-            }
-
             $user = new User();
-            $user->setEmail($email);
-            $user->setPassword($password);
-
+            $form = $this->createForm(RegisterType::class, $user, ['csrf_protection' => false]);
+            $form->submit($data);
+            if (!$form->isValid()) {
+                return $this->response($this->getErrorsFromForm($form), self::CODE_NOT_VALID);
+            }
             $this->registrationHandler->handle($user);
             $message = $this->getUserAddedMessage();
             $data = $this->getDataSuccessMessage($message);
@@ -93,19 +92,27 @@ class UserController extends AbstractController
 
     /**
      * @Route("/user/{id}", name="user_get", methods={"GET"})
+     * @throws ExceptionInterface
      */
     public function show(int $id): JsonResponse
     {
-        $user = $this->repository->findOneById($id);
+        $user = $this->repository->findById($id);
         if (!$user) {
             return $this->responseNotFound();
         }
+        $options = [
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function (User $user) {
+                return $user->getEmail();
+            },
+            AbstractNormalizer::ATTRIBUTES=> ['id','email','isEnabled', 'profile']
+        ];
+        $data = $this->getSerialisedNormaliseData($user, $options);
 
-        return $this->response($user);
+        return $this->response($data);
     }
 
     /**
-     * @Route("/confirm/{id}", name="user_confirm", methods={"PUT"})
+     * @Route("/user/confirm/{id}", name="user_confirm", methods={"PUT"})
      */
     public function confirm(int $id): JsonResponse
     {
@@ -158,22 +165,21 @@ class UserController extends AbstractController
         return new JsonResponse($data, self::CODE_NOT_FOUND);
     }
 
-    private function getDataJsonDecode(Request $request): ?array
+    private function getJsonDecodeData(Request $request): array
     {
         $body = $request->getContent();
-        $data = null;
         if (is_string($body)) {
             $data = json_decode($body, true);
         }
 
-        return $data;
+        return $data ?? [];
     }
 
     private function getDataSuccessMessage(string $message): array
     {
         $data = [
-            'status' => self::CODE_SUCCESS,
-            'success' => $message,
+            'code' => self::CODE_SUCCESS,
+            'message' => $message,
         ];
 
         return $data;
@@ -181,56 +187,74 @@ class UserController extends AbstractController
 
     private function getDataNotFoundMessage(): array
     {
-        $data = [
-            'status' => self::CODE_NOT_FOUND,
-            'errors' => $this->getNotFoundMessage(),
-        ];
-
+        $data = $this->getDataErrorMessage(self::CODE_NOT_FOUND, $this->getNotFoundMessage());
         return $data;
     }
 
     private function getDataErrorMessage(int $code, string $message): array
     {
         $data = [
-            'status' => $code,
-            'errors' => $message,
+            'error' => [
+            'code' => $code,
+            'message' => $message,
+            ]
         ];
 
         return $data;
     }
 
-    private function getTranslationTrans(string $id): string
+    private function getErrorsFromForm(FormInterface $form): array
     {
-        return $this->translator->trans($id);
+        $errors = [];
+        foreach ($form->getErrors() as $error) {
+            $errors[] = $error->getMessage();
+        }
+        foreach ($form->all() as $childForm) {
+            if ($childForm instanceof FormInterface) {
+                if ($childErrors = $this->getErrorsFromForm($childForm)) {
+                    $errors[$childForm->getName()] = $childErrors;
+                }
+            }
+        }
+        return $errors;
     }
 
-    public function getNotValidMessage(): string
+    /**
+     * @throws ExceptionInterface
+     * @throws \Exception
+     */
+
+    private function getSerialisedNormaliseData(array $data, array $options = []): array
     {
-        return $this->getTranslationTrans('User.Api.messages.Data no valid');
+        $normalizer = new ObjectNormalizer();
+
+        $serializer = new Serializer([$normalizer]);
+        $data = $serializer->normalize($data, 'null', $options);
+
+        if (!is_array($data)) {
+            throw new \Exception($this->translator->trans('Not data'), self::CODE_NOT_CONTENT);
+        }
+
+        return $data;
     }
 
-    public function getEmailExistsMessage(): string
+    private function getNotFoundMessage(): string
     {
-        return $this->getTranslationTrans('User.Api.messages.Such e-mail address already exists in the system');
+        return $this->translator->trans('User.Api.messages.User not found');
     }
 
-    public function getNotFoundMessage(): string
+    private function getUserAddedMessage(): string
     {
-        return $this->getTranslationTrans('User.Api.messages.User not found');
+        return $this->translator->trans('User.Api.messages.User added successfully');
     }
 
-    public function getUserAddedMessage(): string
+    private function getUserUpdatedMessage(): string
     {
-        return $this->getTranslationTrans('User.Api.messages.User added successfully');
+        return $this->translator->trans('User.Api.messages.User updated successfully');
     }
 
-    public function getUserUpdatedMessage(): string
+    private function getUserDeletedMessage(): string
     {
-        return $this->getTranslationTrans('User.Api.messages.User updated successfully');
-    }
-
-    public function getUserDeletedMessage(): string
-    {
-        return $this->getTranslationTrans('User.Api.messages.User deleted successfully');
+        return $this->translator->trans('User.Api.messages.User deleted successfully');
     }
 }

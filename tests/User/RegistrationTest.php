@@ -2,23 +2,23 @@
 
 namespace App\Tests\User;
 
-use App\Handler\User\Registration\RegistrationHandlerInterface;
+use App\Handler\User\RegistrationHandler;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationTest extends WebTestCase
 {
-    const EMAIL_NEW = 'marklash13@gmail.com';
+    private const EMAIL_NEW = 'marklash13@gmail.com';
 
     public function testSomethingForPageLogin()
     {
         $client = $this->up();
         $client->request('GET', '/login');
-
-        $client->clickLink($this->getTranslatorTrans('Registration'));
-
+        $translator = $this->getTranslator();
+        $client->clickLink($translator->trans('Registration'));
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h1', $this->getTranslatorTrans('Registration'));
+        $this->assertSelectorTextContains('h1', $translator->trans('Registration'));
     }
 
     public function testSomething()
@@ -27,7 +27,8 @@ class RegistrationTest extends WebTestCase
         $client->request('GET', '/registration');
 
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorTextContains('h1', $this->getTranslatorTrans('Registration'));
+        $translator = $this->getTranslator();
+        $this->assertSelectorTextContains('h1', $translator->trans('Registration'));
     }
 
     public function testRegistrationSubmission()
@@ -39,34 +40,25 @@ class RegistrationTest extends WebTestCase
             'register[password][first]' => self::EMAIL_NEW,
             'register[password][second]' => self::EMAIL_NEW,
         ];
-        $client->submitForm($this->getTranslatorTrans('Save'), $data);
+        $translator = $this->getTranslator();
+        $client->submitForm($translator->trans('Save'), $data);
         $client->followRedirect();
-        $this->assertSelectorExists('div:contains("'.$this->getSuccessMessage().'")');
+        $this->assertSelectorExists('div:contains("' . $this->getNoticeAddedUserMessage() . '")');
     }
 
-    /**
-     * @return \Symfony\Bundle\FrameworkBundle\KernelBrowser
-     */
-    private function up()
+    private function up(): KernelBrowser
     {
         return static::createClient();
     }
 
-    /**
-     * @param $id
-     *
-     * @return string
-     */
-    private function getTranslatorTrans($id)
+    private function getTranslator(): TranslatorInterface
     {
-        return self::$container->get(TranslatorInterface::class)->trans($id);
+        return self::$container->get(TranslatorInterface::class);
     }
 
-    /**
-     * @return string
-     */
-    private function getSuccessMessage()
+    private function getNoticeAddedUserMessage(): string
     {
-        return self::$container->get(RegistrationHandlerInterface::class)->getSuccessMessage();
+        $translator = $this->getTranslator();
+        return $translator->trans('Confirm your email');
     }
 }

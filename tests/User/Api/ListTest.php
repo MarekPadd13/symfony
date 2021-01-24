@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class ListTest extends WebTestCase
 {
-    const CODE_SUCCESS = 200;
+    private const CODE_SUCCESS = 200;
 
     public function testSomething()
     {

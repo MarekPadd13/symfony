@@ -8,6 +8,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ConfirmationHandler
 {
+    private const CODE_CONFLICT = 409;
+
     private UserRepository $repository;
     private TranslatorInterface $translator;
 
@@ -25,19 +27,14 @@ final class ConfirmationHandler
     public function handle(User $user): void
     {
         if ($user->getIsEnabled()) {
-            throw new \Exception($this->getErrorMessage(), 422);
+            throw new \Exception($this->getErrorMessage(), self::CODE_CONFLICT);
         }
         $user->setIsEnabled(true);
         $this->repository->save($user);
     }
 
-    public function getErrorMessage(): string
+    private function getErrorMessage(): string
     {
         return $this->translator->trans('Your status is active');
-    }
-
-    public function getSuccessMessage(): string
-    {
-        return $this->translator->trans('Your email is confirmed');
     }
 }
