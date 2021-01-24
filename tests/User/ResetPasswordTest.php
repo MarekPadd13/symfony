@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ResetTest extends WebTestCase
+class ResetPasswordTest extends WebTestCase
 {
     public function testSomethingForPageLogin()
     {
